@@ -54,57 +54,59 @@ export default function BookingsPage() {
 
             {/* Table Panel */}
             <div className="glass-panel rounded-3xl overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-admin-forest/5 text-xs font-mono uppercase tracking-widest text-admin-forest/50">
-                        <tr>
-                            <th className="py-4 pl-8">Booking ID</th>
-                            <th className="py-4">Guest</th>
-                            <th className="py-4">Villa</th>
-                            <th className="py-4">Timeline</th>
-                            <th className="py-4">Status</th>
-                            <th className="py-4 text-right pr-8">Total</th>
-                            <th className="py-4"></th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-admin-forest/5 text-sm">
-                        {BOOKINGS.map(booking => (
-                            <tr key={booking.id} className="group hover:bg-white/50 transition-colors cursor-pointer">
-                                <td className="py-6 pl-8 font-mono text-admin-forest/60">#{booking.id}</td>
-                                <td className="py-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-admin-sand flex items-center justify-center text-xs font-bold text-admin-forest">
-                                            {booking.avatar}
-                                        </div>
-                                        <span className="font-serif font-medium text-lg">{booking.guest}</span>
-                                    </div>
-                                </td>
-                                <td className="py-6 text-admin-forest/70">{booking.villa}</td>
-                                <td className="py-6 font-mono text-xs">
-                                    <div className="flex items-center gap-2 text-admin-forest">
-                                        <CalendarIcon size={14} className="opacity-50" />
-                                        {booking.checkIn} &rarr; {booking.checkOut}
-                                    </div>
-                                </td>
-                                <td className="py-6">
-                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border
-                       ${booking.status === 'Active' ? 'bg-admin-success/10 text-admin-success border-admin-success/20' :
-                                            booking.status === 'Upcoming' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                booking.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                                                    'bg-gray-50 text-gray-500 border-gray-100'}
-                    `}>
-                                        {booking.status}
-                                    </span>
-                                </td>
-                                <td className="py-6 text-right pr-8 font-mono font-medium">IDR {booking.total}</td>
-                                <td className="py-6 pr-4 text-right">
-                                    <button className="p-2 hover:bg-admin-forest/5 rounded-full text-admin-forest/40 hover:text-admin-forest transition-colors">
-                                        <MoreHorizontal size={16} />
-                                    </button>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left min-w-[800px]">
+                        <thead className="bg-admin-forest/5 text-xs font-mono uppercase tracking-widest text-admin-forest/50">
+                            <tr>
+                                <th className="py-4 pl-8">Booking ID</th>
+                                <th className="py-4">Guest</th>
+                                <th className="py-4">Villa</th>
+                                <th className="py-4">Timeline</th>
+                                <th className="py-4">Status</th>
+                                <th className="py-4 text-right pr-8">Total</th>
+                                <th className="py-4"></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-admin-forest/5 text-sm">
+                            {BOOKINGS.map(booking => (
+                                <tr key={booking.id} className="group hover:bg-white/50 transition-colors cursor-pointer">
+                                    <td className="py-6 pl-8 font-mono text-admin-forest/60">#{booking.id}</td>
+                                    <td className="py-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-admin-sand flex items-center justify-center text-xs font-bold text-admin-forest">
+                                                {booking.avatar}
+                                            </div>
+                                            <span className="font-serif font-medium text-lg">{booking.guest}</span>
+                                        </div>
+                                    </td>
+                                    <td className="py-6 text-admin-forest/70">{booking.villa}</td>
+                                    <td className="py-6 font-mono text-xs">
+                                        <div className="flex items-center gap-2 text-admin-forest">
+                                            <CalendarIcon size={14} className="opacity-50" />
+                                            {booking.checkIn} &rarr; {booking.checkOut}
+                                        </div>
+                                    </td>
+                                    <td className="py-6">
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border
+                       ${booking.status === 'Active' ? 'bg-admin-success/10 text-admin-success border-admin-success/20' :
+                                                booking.status === 'Upcoming' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                    booking.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                                        'bg-gray-50 text-gray-500 border-gray-100'}
+                    `}>
+                                            {booking.status}
+                                        </span>
+                                    </td>
+                                    <td className="py-6 text-right pr-8 font-mono font-medium">IDR {booking.total}</td>
+                                    <td className="py-6 pr-4 text-right">
+                                        <button className="p-2 hover:bg-admin-forest/5 rounded-full text-admin-forest/40 hover:text-admin-forest transition-colors">
+                                            <MoreHorizontal size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
                 {/* Pagination Mock */}
                 <div className="p-6 border-t border-admin-forest/5 flex justify-between items-center text-xs font-mono text-admin-forest/50">
