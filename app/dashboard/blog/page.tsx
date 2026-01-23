@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { Plus, Edit3, Trash2, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { JournalPost } from '../../../lib/types';
+import { useToast } from '../../../components/Toast';
 
 export default function JournalPage() {
+    const { success, error: toastError } = useToast();
     const [posts, setPosts] = useState<JournalPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,8 +43,9 @@ export default function JournalPage() {
             const { error: deleteError } = await supabase.from('journal_posts').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setPosts(prev => prev.filter(p => p.id !== id));
+            success('Post Deleted', `"${title}" removed successfully`);
         } catch (err: any) {
-            alert(`Failed to delete: ${err.message}`);
+            toastError('Delete Failed', err.message);
         } finally {
             setDeleting(null);
         }

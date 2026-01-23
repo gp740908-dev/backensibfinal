@@ -18,7 +18,7 @@
   .glass-panel {
     @apply bg-admin-surface/80 backdrop-blur-xl border border-admin-forest/5 shadow-sm;
   }
-  
+
   .btn-primary {
     @apply bg-admin-forest text-admin-surface px-6 py-3 rounded-lg font-medium text-sm tracking-wide hover:bg-admin-forest/90 transition-all duration-300 flex items-center gap-2;
   }
@@ -36,13 +36,57 @@
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #D1D1D1;
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #152C22;
+}
+
+/* Toast Animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shrink {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }

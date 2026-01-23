@@ -4,8 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { Loader2, AlertCircle, Mail, Check, Trash2, MessageSquare } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Inquiry } from '../../../lib/types';
+import { useToast } from '../../../components/Toast';
 
 export default function InquiriesPage() {
+    const { success, error: toastError } = useToast();
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -42,8 +44,9 @@ export default function InquiriesPage() {
                 .eq('id', id);
             if (updateError) throw updateError;
             setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: newStatus } : i));
+            success('Status Updated', `Inquiry marked as ${newStatus}`);
         } catch (err: any) {
-            alert(`Failed to update: ${err.message}`);
+            toastError('Update Failed', err.message);
         } finally {
             setUpdatingId(null);
         }
@@ -56,8 +59,9 @@ export default function InquiriesPage() {
             const { error: deleteError } = await supabase.from('inquiries').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setInquiries(prev => prev.filter(i => i.id !== id));
+            success('Inquiry Deleted', 'Message removed successfully');
         } catch (err: any) {
-            alert(`Failed to delete: ${err.message}`);
+            toastError('Delete Failed', err.message);
         } finally {
             setUpdatingId(null);
         }

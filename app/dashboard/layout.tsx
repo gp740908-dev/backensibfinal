@@ -1,10 +1,14 @@
+'use client';
 
 import { DashboardShell } from '../../components/DashboardShell';
+import { ToastProvider } from '../../components/Toast';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
-        <DashboardShell>
-            {children}
-        </DashboardShell>
+        <ToastProvider>
+            <DashboardShell>
+                {children}
+            </DashboardShell>
+        </ToastProvider>
     );
 }

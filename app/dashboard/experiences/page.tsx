@@ -4,8 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Edit3, Trash2, Loader2, AlertCircle, Save, X, DollarSign } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Experience } from '../../../lib/types';
+import { useToast } from '../../../components/Toast';
 
 export default function ExperiencesPage() {
+    const { success, error: toastError } = useToast();
     const [experiences, setExperiences] = useState<Experience[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -103,8 +105,9 @@ export default function ExperiencesPage() {
                 setExperiences(prev => [newExp, ...prev]);
             }
             setShowModal(false);
+            success(editingId ? 'Experience Updated' : 'Experience Created', `"${form.title}" saved successfully`);
         } catch (err: any) {
-            alert(`Failed to save: ${err.message}`);
+            toastError('Save Failed', err.message);
         } finally {
             setSaving(false);
         }
@@ -117,8 +120,9 @@ export default function ExperiencesPage() {
             const { error: deleteError } = await supabase.from('experiences').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setExperiences(prev => prev.filter(e => e.id !== id));
+            success('Experience Deleted', `"${title}" removed successfully`);
         } catch (err: any) {
-            alert(`Failed to delete: ${err.message}`);
+            toastError('Delete Failed', err.message);
         } finally {
             setDeleting(null);
         }

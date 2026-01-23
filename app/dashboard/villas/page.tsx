@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { Plus, Edit3, Trash2, MapPin, Bed, Maximize, Star, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Villa } from '../../../lib/types';
+import { useToast } from '../../../components/Toast';
 
 export default function VillasPage() {
+    const { success, error: toastError } = useToast();
     const [villas, setVillas] = useState<Villa[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -42,8 +44,9 @@ export default function VillasPage() {
             const { error: deleteError } = await supabase.from('villas').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setVillas(prev => prev.filter(v => v.id !== id));
+            success('Villa Deleted', `"${name}" has been removed successfully`);
         } catch (err: any) {
-            alert(`Failed to delete: ${err.message}`);
+            toastError('Delete Failed', err.message);
         } finally {
             setDeleting(null);
         }

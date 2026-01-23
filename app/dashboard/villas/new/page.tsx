@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
+import { useToast } from '../../../../components/Toast';
 
 export default function NewVillaPage() {
     const router = useRouter();
+    const { success, error: toastError } = useToast();
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -61,9 +63,11 @@ export default function NewVillaPage() {
 
             if (insertError) throw insertError;
 
+            success('Villa Created', `"${form.name}" has been added successfully`);
             router.push('/dashboard/villas');
         } catch (err: any) {
             setError(err.message || 'Failed to create villa');
+            toastError('Creation Failed', err.message);
         } finally {
             setSaving(false);
         }

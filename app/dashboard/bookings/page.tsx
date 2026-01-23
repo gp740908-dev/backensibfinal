@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { Search, Filter, ChevronLeft, ChevronRight, Calendar as CalendarIcon, MoreHorizontal, CheckCircle, XCircle, Loader2, AlertCircle, Eye } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Booking, Villa } from '../../../lib/types';
+import { useToast } from '../../../components/Toast';
 
 export default function BookingsPage() {
+    const { success, error: toastError } = useToast();
     const [bookings, setBookings] = useState<(Booking & { villa_name?: string })[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -56,8 +58,9 @@ export default function BookingsPage() {
             if (updateError) throw updateError;
 
             setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+            success(`Booking ${newStatus === 'confirmed' ? 'Confirmed' : 'Cancelled'}`, 'Status updated successfully');
         } catch (err: any) {
-            alert(`Failed to update: ${err.message}`);
+            toastError('Update Failed', err.message);
         } finally {
             setUpdatingId(null);
         }

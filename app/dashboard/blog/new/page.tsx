@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
+import { useToast } from '../../../../components/Toast';
 
 export default function NewJournalPostPage() {
     const router = useRouter();
+    const { success, error: toastError } = useToast();
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -53,9 +55,11 @@ export default function NewJournalPostPage() {
             }]);
 
             if (insertError) throw insertError;
+            success('Post Created', `"${form.title}" published successfully`);
             router.push('/dashboard/blog');
         } catch (err: any) {
             setError(err.message || 'Failed to create post');
+            toastError('Creation Failed', err.message);
         } finally {
             setSaving(false);
         }

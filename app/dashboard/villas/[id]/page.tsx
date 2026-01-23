@@ -6,11 +6,13 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { Villa } from '../../../../lib/types';
+import { useToast } from '../../../../components/Toast';
 
 export default function EditVillaPage() {
     const router = useRouter();
     const params = useParams();
     const villaId = params.id as string;
+    const { success, error: toastError } = useToast();
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -107,9 +109,11 @@ export default function EditVillaPage() {
 
             if (updateError) throw updateError;
 
+            success('Villa Updated', `"${form.name}" has been saved successfully`);
             router.push('/dashboard/villas');
         } catch (err: any) {
             setError(err.message || 'Failed to update villa');
+            toastError('Update Failed', err.message);
         } finally {
             setSaving(false);
         }
@@ -121,9 +125,11 @@ export default function EditVillaPage() {
         try {
             const { error: deleteError } = await supabase.from('villas').delete().eq('id', villaId);
             if (deleteError) throw deleteError;
+            success('Villa Deleted', `"${form.name}" has been removed`);
             router.push('/dashboard/villas');
         } catch (err: any) {
             setError(err.message || 'Failed to delete villa');
+            toastError('Delete Failed', err.message);
             setDeleting(false);
         }
     };

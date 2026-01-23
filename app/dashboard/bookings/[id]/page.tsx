@@ -6,11 +6,13 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, User, Mail, Phone, MessageSquare, Home, DollarSign, Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { Booking } from '../../../../lib/types';
+import { useToast } from '../../../../components/Toast';
 
 export default function BookingDetailPage() {
     const router = useRouter();
     const params = useParams();
     const bookingId = params.id as string;
+    const { success, error: toastError } = useToast();
 
     const [booking, setBooking] = useState<Booking & { villa_name?: string } | null>(null);
     const [loading, setLoading] = useState(true);
@@ -58,8 +60,9 @@ export default function BookingDetailPage() {
 
             if (updateError) throw updateError;
             setBooking(prev => prev ? { ...prev, status: newStatus } : null);
+            success('Booking Updated', `Status changed to ${newStatus}`);
         } catch (err: any) {
-            alert(`Failed to update: ${err.message}`);
+            toastError('Update Failed', err.message);
         } finally {
             setUpdating(false);
         }
