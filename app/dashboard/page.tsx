@@ -50,7 +50,7 @@ export default function DashboardHome() {
                 .reduce((sum, b) => sum + (b.total_price || 0), 0);
 
             const pendingBookings = bookings.filter(b => b.status === 'pending').length;
-            const recentBookings = bookings.slice(0, 5).map(b => ({
+            const recentBookings = bookings.slice(0, 5).map((b: any) => ({
                 ...b,
                 villa_name: b.villas?.name || 'Unknown'
             }));
