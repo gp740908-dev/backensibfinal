@@ -82,9 +82,41 @@ export default function BookingsPage() {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
     };
 
-    const formatWhatsAppLink = (phone: string, guestName: string, villaName: string, dates: string) => {
+    const formatWhatsAppLink = (phone: string, guestName: string, villaName: string, dates: string, totalPrice: string) => {
         const cleanPhone = phone.replace(/\D/g, '');
-        const message = `Halo ${guestName}, terima kasih telah melakukan booking di StayinUBUD untuk ${villaName} (${dates}). `;
+        const message = `Hello ${guestName}! 👋
+
+Thank you for your booking request at *StayinUBUD*.
+
+*📋 BOOKING DETAILS*
+━━━━━━━━━━━━━━━
+🏡 Villa: ${villaName}
+📅 Dates: ${dates}
+💰 Total: ${totalPrice}
+
+*💳 PAYMENT OPTIONS*
+━━━━━━━━━━━━━━━
+We accept the following payment methods:
+
+1️⃣ *Bank Transfer*
+   BCA: 123-456-7890
+   Account Name: PT StayinUBUD
+
+2️⃣ *QRIS*
+   We can send you the QRIS code
+
+3️⃣ *Cash on Arrival*
+   Pay directly at the villa
+
+*📌 NEXT STEPS*
+━━━━━━━━━━━━━━━
+• 50% deposit required to confirm booking
+• Remaining balance due on check-in day
+
+Please reply to confirm your preferred payment method, and we'll finalize your reservation.
+
+Best regards,
+*StayinUBUD Team* 🌴`;
         return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
     };
 
@@ -192,7 +224,8 @@ export default function BookingsPage() {
                                                                     booking.guest_whatsapp,
                                                                     booking.guest_name,
                                                                     booking.villa_name || '',
-                                                                    `${formatDate(booking.start_date)} - ${formatDate(booking.end_date)}`
+                                                                    `${formatDate(booking.start_date)} - ${formatDate(booking.end_date)}`,
+                                                                    formatPrice(booking.total_price)
                                                                 )}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
@@ -235,7 +268,8 @@ export default function BookingsPage() {
                                                             booking.guest_whatsapp,
                                                             booking.guest_name,
                                                             booking.villa_name || '',
-                                                            `${formatDate(booking.start_date)} - ${formatDate(booking.end_date)}`
+                                                            `${formatDate(booking.start_date)} - ${formatDate(booking.end_date)}`,
+                                                            formatPrice(booking.total_price)
                                                         )}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
