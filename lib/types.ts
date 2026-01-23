@@ -47,7 +47,7 @@ export interface Experience {
     description: string;
     category: string;
     image_url: string;
-    price_start_from?: number;
+    price_start_from?: number | null;
     cta_label?: string;
     created_at?: string;
 }
