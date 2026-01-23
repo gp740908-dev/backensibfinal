@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Loader2, AlertCircle, Mail, Check, Trash2, MessageSquare } from 'lucide-react';
+import Link from 'next/link';
+import { Loader2, AlertCircle, Mail, Check, Trash2, MessageSquare, Phone, Calendar, Eye } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Inquiry } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
+import { handleSupabaseError } from '../../../lib/errorHandler';
 
 export default function InquiriesPage() {
     const { success, error: toastError } = useToast();
@@ -29,7 +31,7 @@ export default function InquiriesPage() {
             if (fetchError) throw fetchError;
             setInquiries(data || []);
         } catch (err: any) {
-            setError(err.message || 'Failed to load inquiries');
+            setError(handleSupabaseError(err, 'loading inquiries'));
         } finally {
             setLoading(false);
         }
@@ -38,15 +40,19 @@ export default function InquiriesPage() {
     async function updateStatus(id: string, newStatus: string) {
         setUpdatingId(id);
         try {
+            const updates: any = { status: newStatus };
+            if (newStatus === 'replied') {
+                updates.replied_at = new Date().toISOString();
+            }
             const { error: updateError } = await supabase
                 .from('inquiries')
-                .update({ status: newStatus })
+                .update(updates)
                 .eq('id', id);
             if (updateError) throw updateError;
-            setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: newStatus } : i));
+            setInquiries(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
             success('Status Updated', `Inquiry marked as ${newStatus}`);
         } catch (err: any) {
-            toastError('Update Failed', err.message);
+            toastError('Update Failed', handleSupabaseError(err, 'updating inquiry'));
         } finally {
             setUpdatingId(null);
         }
@@ -61,7 +67,7 @@ export default function InquiriesPage() {
             setInquiries(prev => prev.filter(i => i.id !== id));
             success('Inquiry Deleted', 'Message removed successfully');
         } catch (err: any) {
-            toastError('Delete Failed', err.message);
+            toastError('Delete Failed', handleSupabaseError(err, 'deleting inquiry'));
         } finally {
             setUpdatingId(null);
         }
@@ -74,6 +80,13 @@ export default function InquiriesPage() {
         } catch {
             return dateStr;
         }
+    };
+
+    const formatWhatsAppLink = (phone?: string, name?: string) => {
+        if (!phone) return null;
+        const cleanPhone = phone.replace(/\D/g, '');
+        const message = encodeURIComponent(`Halo ${name || 'Bapak/Ibu'}, terima kasih telah menghubungi StayinUBUD. `);
+        return `https://wa.me/${cleanPhone}?text=${message}`;
     };
 
     if (loading) {
@@ -125,7 +138,7 @@ export default function InquiriesPage() {
                         >
                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
+                                    <div className="flex flex-wrap items-center gap-3 mb-2">
                                         <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest
                       ${inquiry.status === 'new' ? 'bg-yellow-100 text-yellow-700' :
                                                 inquiry.status === 'replied' ? 'bg-green-100 text-green-700' :
@@ -137,20 +150,80 @@ export default function InquiriesPage() {
                                         <span className="text-xs text-admin-forest/40">{formatDate(inquiry.created_at)}</span>
                                     </div>
 
-                                    <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex items-center gap-3 mb-2">
                                         <p className="font-serif font-medium text-lg">{inquiry.name || 'Anonymous'}</p>
                                         {inquiry.email && (
-                                            <a href={`mailto:${inquiry.email}`} className="text-admin-forest/50 hover:text-admin-gold">
+                                            <a href={`mailto:${inquiry.email}`} className="text-admin-forest/50 hover:text-admin-gold" title="Send Email">
                                                 <Mail size={14} />
+                                            </a>
+                                        )}
+                                        {inquiry.whatsapp && (
+                                            <a
+                                                href={formatWhatsAppLink(inquiry.whatsapp, inquiry.name) || '#'}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-green-600 hover:text-green-700"
+                                                title="Reply via WhatsApp"
+                                            >
+                                                <Phone size={14} />
                                             </a>
                                         )}
                                     </div>
 
-                                    <p className="text-admin-forest/70">{inquiry.message}</p>
+                                    {/* Villa & Dates */}
+                                    {(inquiry.villa_name || inquiry.check_in_date) && (
+                                        <div className="flex flex-wrap gap-4 text-xs text-admin-forest/60 mb-2">
+                                            {inquiry.villa_name && (
+                                                <span className="bg-admin-sand px-2 py-1 rounded">{inquiry.villa_name}</span>
+                                            )}
+                                            {inquiry.check_in_date && inquiry.check_out_date && (
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar size={12} />
+                                                    {inquiry.check_in_date} → {inquiry.check_out_date}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <p className="text-admin-forest/70 line-clamp-2">{inquiry.message}</p>
+
+                                    {/* Replied At */}
+                                    {inquiry.replied_at && (
+                                        <p className="text-xs text-green-600 mt-2">✓ Replied: {formatDate(inquiry.replied_at)}</p>
+                                    )}
                                 </div>
 
-                                <div className="flex gap-2">
-                                    {inquiry.status === 'new' && (
+                                <div className="flex gap-2 shrink-0">
+                                    {/* WhatsApp Reply Button */}
+                                    {inquiry.whatsapp && (
+                                        <a
+                                            href={formatWhatsAppLink(inquiry.whatsapp, inquiry.name) || '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={() => {
+                                                if (inquiry.status === 'new') {
+                                                    updateStatus(inquiry.id, 'replied');
+                                                }
+                                            }}
+                                            className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2 text-sm"
+                                            title="Reply via WhatsApp"
+                                        >
+                                            <Phone size={16} />
+                                            <span className="hidden md:inline">WhatsApp</span>
+                                        </a>
+                                    )}
+
+                                    {/* View Details */}
+                                    <Link
+                                        href={`/dashboard/inquiries/${inquiry.id}`}
+                                        className="p-2 bg-admin-forest/5 text-admin-forest rounded-lg hover:bg-admin-forest/10 transition-colors"
+                                        title="View Details"
+                                    >
+                                        <Eye size={16} />
+                                    </Link>
+
+                                    {/* Mark as Replied (manual) */}
+                                    {inquiry.status === 'new' && !inquiry.whatsapp && (
                                         <button
                                             onClick={() => updateStatus(inquiry.id, 'replied')}
                                             disabled={updatingId === inquiry.id}
@@ -160,6 +233,8 @@ export default function InquiriesPage() {
                                             {updatingId === inquiry.id ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                                         </button>
                                     )}
+
+                                    {/* Delete */}
                                     <button
                                         onClick={() => handleDelete(inquiry.id)}
                                         disabled={updatingId === inquiry.id}

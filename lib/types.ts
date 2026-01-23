@@ -71,9 +71,15 @@ export interface Inquiry {
     id: string;
     name?: string;
     email?: string;
+    whatsapp?: string;
     message?: string;
     type: string;
     status: string;
+    villa_name?: string;
+    check_in_date?: string;
+    check_out_date?: string;
+    admin_notes?: string;
+    replied_at?: string;
     created_at?: string;
 }
 
