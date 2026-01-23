@@ -12,16 +12,20 @@ import {
     Settings,
     LogOut,
     Bell,
-    X
+    X,
+    Sparkles,
+    FileText
 } from 'lucide-react';
 
 const NAV_ITEMS = [
     { label: 'Overview', icon: Home, href: '/dashboard' },
     { label: 'Properties', icon: Map, href: '/dashboard/villas' },
     { label: 'Bookings', icon: Calendar, href: '/dashboard/bookings' },
-    { label: 'Guests', icon: Users, href: '/dashboard/guests' },
+    { label: 'Experiences', icon: Sparkles, href: '/dashboard/experiences' },
+    { label: 'Blog', icon: FileText, href: '/dashboard/blog' },
     { label: 'Finance', icon: PieChart, href: '/dashboard/finance' },
 ];
+
 
 interface SidebarProps {
     mobileOpen?: boolean;

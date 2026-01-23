@@ -1,9 +1,94 @@
 'use client';
 
-import React from 'react';
-import { Download, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Download, TrendingUp, TrendingDown, DollarSign, Loader2, AlertCircle } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
+
+interface RevenueData {
+    totalRevenue: number;
+    totalBookings: number;
+    confirmedRevenue: number;
+    pendingRevenue: number;
+    monthlyData: { month: string; revenue: number }[];
+}
 
 export default function FinancePage() {
+    const [data, setData] = useState<RevenueData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchRevenueData();
+    }, []);
+
+    async function fetchRevenueData() {
+        setLoading(true);
+        setError(null);
+        try {
+            const { data: bookings, error: fetchError } = await supabase
+                .from('bookings')
+                .select('total_price, status, created_at');
+
+            if (fetchError) throw fetchError;
+
+            const allBookings = bookings || [];
+
+            // Calculate totals
+            const totalRevenue = allBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+            const confirmedRevenue = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').reduce((sum, b) => sum + (b.total_price || 0), 0);
+            const pendingRevenue = allBookings.filter(b => b.status === 'pending').reduce((sum, b) => sum + (b.total_price || 0), 0);
+
+            // Monthly breakdown (last 6 months)
+            const months: Record<string, number> = {};
+            allBookings.forEach(b => {
+                if (b.created_at) {
+                    const monthKey = new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                    months[monthKey] = (months[monthKey] || 0) + (b.total_price || 0);
+                }
+            });
+
+            const monthlyData = Object.entries(months).map(([month, revenue]) => ({ month, revenue })).slice(-6);
+
+            setData({
+                totalRevenue,
+                totalBookings: allBookings.length,
+                confirmedRevenue,
+                pendingRevenue,
+                monthlyData
+            });
+        } catch (err: any) {
+            setError(err.message || 'Failed to load revenue data');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const formatPrice = (price: number) => {
+        if (price >= 1000000000) return `${(price / 1000000000).toFixed(1)}B`;
+        if (price >= 1000000) return `${(price / 1000000).toFixed(1)}M`;
+        return new Intl.NumberFormat('id-ID').format(price);
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 size={32} className="animate-spin text-admin-forest/50" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-96 text-center">
+                <AlertCircle size={48} className="text-red-500 mb-4" />
+                <p className="text-red-600 mb-4">{error}</p>
+                <button onClick={fetchRevenueData} className="btn-primary">Retry</button>
+            </div>
+        );
+    }
+
+    const maxMonthlyRevenue = Math.max(...(data?.monthlyData.map(m => m.revenue) || [1]));
+
     return (
         <div className="space-y-8">
 
@@ -16,7 +101,7 @@ export default function FinancePage() {
                     </h1>
                 </div>
                 <button className="btn-outline">
-                    <Download size={16} /> Export Q1 Report
+                    <Download size={16} /> Export Report
                 </button>
             </header>
 
@@ -26,26 +111,26 @@ export default function FinancePage() {
                     <div className="absolute right-0 top-0 p-8 opacity-10">
                         <DollarSign size={100} />
                     </div>
-                    <span className="block font-mono text-xs uppercase tracking-widest opacity-60 mb-2">Net Income (YTD)</span>
-                    <h2 className="text-5xl md:text-6xl font-serif mb-4">425.8 <span className="text-2xl opacity-50">M</span></h2>
+                    <span className="block font-mono text-xs uppercase tracking-widest opacity-60 mb-2">Total Revenue</span>
+                    <h2 className="text-5xl md:text-6xl font-serif mb-4">IDR {formatPrice(data?.totalRevenue || 0)}</h2>
                     <div className="flex items-center gap-2 text-sm text-green-400">
-                        <TrendingUp size={16} /> +24% vs last year
+                        <TrendingUp size={16} /> {data?.totalBookings || 0} total bookings
                     </div>
                 </div>
 
                 <div className="md:col-span-1 glass-panel p-8 rounded-3xl flex flex-col justify-center">
-                    <span className="block font-mono text-xs uppercase tracking-widest opacity-60 mb-2 text-admin-forest">Expenses</span>
-                    <h3 className="text-3xl font-serif text-admin-forest mb-2">85.4 <span className="text-lg opacity-50">M</span></h3>
-                    <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-wide">
-                        <TrendingDown size={14} /> +5% (Maintenance)
-                    </div>
-                </div>
-
-                <div className="md:col-span-1 glass-panel p-8 rounded-3xl flex flex-col justify-center">
-                    <span className="block font-mono text-xs uppercase tracking-widest opacity-60 mb-2 text-admin-forest">Projected (Q2)</span>
-                    <h3 className="text-3xl font-serif text-admin-forest mb-2">610.0 <span className="text-lg opacity-50">M</span></h3>
+                    <span className="block font-mono text-xs uppercase tracking-widest opacity-60 mb-2 text-admin-forest">Confirmed</span>
+                    <h3 className="text-3xl font-serif text-admin-forest mb-2">IDR {formatPrice(data?.confirmedRevenue || 0)}</h3>
                     <div className="flex items-center gap-2 text-xs text-admin-success font-bold uppercase tracking-wide">
-                        <TrendingUp size={14} /> High Season
+                        <TrendingUp size={14} /> Secured
+                    </div>
+                </div>
+
+                <div className="md:col-span-1 glass-panel p-8 rounded-3xl flex flex-col justify-center">
+                    <span className="block font-mono text-xs uppercase tracking-widest opacity-60 mb-2 text-admin-forest">Pending</span>
+                    <h3 className="text-3xl font-serif text-admin-forest mb-2">IDR {formatPrice(data?.pendingRevenue || 0)}</h3>
+                    <div className="flex items-center gap-2 text-xs text-yellow-600 font-bold uppercase tracking-wide">
+                        Awaiting Confirmation
                     </div>
                 </div>
             </div>
@@ -56,53 +141,54 @@ export default function FinancePage() {
                 {/* Main Chart */}
                 <div className="lg:col-span-2 glass-panel p-8 rounded-3xl">
                     <div className="flex justify-between items-center mb-8">
-                        <h3 className="font-serif text-2xl text-admin-forest">Cash Flow</h3>
-                        <div className="flex gap-2">
-                            {['1M', '3M', '6M', '1Y'].map(range => (
-                                <button key={range} className="px-3 py-1 text-xs font-mono rounded-lg hover:bg-admin-forest/5 text-admin-forest/60 hover:text-admin-forest transition-colors">
-                                    {range}
-                                </button>
-                            ))}
-                        </div>
+                        <h3 className="font-serif text-2xl text-admin-forest">Monthly Revenue</h3>
                     </div>
 
-                    {/* Simple Chart Mock */}
-                    <div className="h-64 w-full flex items-end justify-between gap-2 px-4 border-b border-l border-admin-forest/10">
-                        {[30, 45, 35, 60, 50, 75, 65, 90, 85, 95, 80, 100].map((val, i) => (
-                            <div key={i} className="w-full bg-admin-forest hover:bg-admin-gold transition-colors rounded-t-sm relative group" style={{ height: `${val}%` }}>
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-admin-forest text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {val}M
-                                </div>
+                    {data?.monthlyData && data.monthlyData.length > 0 ? (
+                        <>
+                            <div className="h-64 w-full flex items-end justify-between gap-2 px-4 border-b border-l border-admin-forest/10">
+                                {data.monthlyData.map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="w-full bg-admin-forest hover:bg-admin-gold transition-colors rounded-t-sm relative group cursor-pointer"
+                                        style={{ height: `${(item.revenue / maxMonthlyRevenue) * 100}%`, minHeight: '10px' }}
+                                    >
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-admin-forest text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            IDR {formatPrice(item.revenue)}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-between mt-4 text-xs font-mono text-admin-forest/40 uppercase">
-                        <span>Jan</span><span>Dec</span>
-                    </div>
+                            <div className="flex justify-between mt-4 text-xs font-mono text-admin-forest/40 uppercase">
+                                {data.monthlyData.map((item, i) => (
+                                    <span key={i}>{item.month}</span>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="h-64 flex items-center justify-center text-admin-forest/40">
+                            No booking data to display
+                        </div>
+                    )}
                 </div>
 
-                {/* Breakdown */}
+                {/* Quick Stats */}
                 <div className="lg:col-span-1 glass-panel p-8 rounded-3xl">
-                    <h3 className="font-serif text-2xl text-admin-forest mb-8">Expenses</h3>
+                    <h3 className="font-serif text-2xl text-admin-forest mb-8">Summary</h3>
 
                     <div className="space-y-6">
-                        {[
-                            { label: 'Maintenance', val: 35, color: 'bg-admin-forest' },
-                            { label: 'Staff Salaries', val: 25, color: 'bg-admin-gold' },
-                            { label: 'Utilities', val: 15, color: 'bg-gray-400' },
-                            { label: 'Marketing', val: 10, color: 'bg-gray-300' },
-                            { label: 'Waitlist', val: 15, color: 'bg-gray-200' },
-                        ].map((item, i) => (
-                            <div key={i}>
-                                <div className="flex justify-between text-xs font-bold text-admin-forest mb-2">
-                                    <span>{item.label}</span>
-                                    <span>{item.val}%</span>
-                                </div>
-                                <div className="w-full h-2 bg-admin-forest/5 rounded-full overflow-hidden">
-                                    <div className={`${item.color} h-full rounded-full`} style={{ width: `${item.val}%` }}></div>
-                                </div>
+                        <div className="p-4 bg-white/50 rounded-xl">
+                            <div className="flex justify-between text-sm font-bold text-admin-forest mb-2">
+                                <span>Total Bookings</span>
+                                <span>{data?.totalBookings || 0}</span>
                             </div>
-                        ))}
+                        </div>
+                        <div className="p-4 bg-white/50 rounded-xl">
+                            <div className="flex justify-between text-sm font-bold text-admin-forest mb-2">
+                                <span>Avg. Booking Value</span>
+                                <span>IDR {formatPrice((data?.totalRevenue || 0) / Math.max(data?.totalBookings || 1, 1))}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <button className="w-full mt-8 py-3 bg-admin-forest/5 rounded-xl text-xs font-bold text-admin-forest hover:bg-admin-forest/10 transition-colors">
