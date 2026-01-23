@@ -53,12 +53,16 @@ export default function BookingDetailPage() {
         if (!booking) return;
         setUpdating(true);
         try {
-            const { error: updateError } = await supabase
+            const { data, error: updateError } = await supabase
                 .from('bookings')
                 .update({ status: newStatus })
-                .eq('id', bookingId);
+                .eq('id', bookingId)
+                .select();
 
             if (updateError) throw updateError;
+            if (!data || data.length === 0) {
+                throw new Error('Update failed: No changes were saved. Check your permissions.');
+            }
             setBooking(prev => prev ? { ...prev, status: newStatus } : null);
             success('Booking Updated', `Status changed to ${newStatus}`);
         } catch (err: any) {

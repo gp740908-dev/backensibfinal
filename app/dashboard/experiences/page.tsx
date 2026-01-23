@@ -88,11 +88,15 @@ export default function ExperiencesPage() {
 
             if (editingId) {
                 // Update
-                const { error: updateError } = await supabase
+                const { data, error: updateError } = await supabase
                     .from('experiences')
                     .update(payload)
-                    .eq('id', editingId);
+                    .eq('id', editingId)
+                    .select();
                 if (updateError) throw updateError;
+                if (!data || data.length === 0) {
+                    throw new Error('Update failed: No changes were saved. Check your permissions.');
+                }
                 setExperiences(prev => prev.map(e => e.id === editingId ? { ...e, ...payload } : e));
             } else {
                 // Create

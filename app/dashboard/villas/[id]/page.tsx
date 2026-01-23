@@ -105,9 +105,16 @@ export default function EditVillaPage() {
                 features: form.features.split(',').map(f => f.trim()).filter(Boolean)
             };
 
-            const { error: updateError } = await supabase.from('villas').update(payload).eq('id', villaId);
+            const { data, error: updateError } = await supabase
+                .from('villas')
+                .update(payload)
+                .eq('id', villaId)
+                .select();
 
             if (updateError) throw updateError;
+            if (!data || data.length === 0) {
+                throw new Error('Update failed: No changes were saved. Check your permissions.');
+            }
 
             success('Villa Updated', `"${form.name}" has been saved successfully`);
             router.push('/dashboard/villas');
