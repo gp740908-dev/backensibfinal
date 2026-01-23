@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit3, Trash2, Loader2, AlertCircle, Save, X } from 'lucide-react';
+import { Plus, Edit3, Trash2, Loader2, AlertCircle, Save, X, DollarSign } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Experience } from '../../../lib/types';
 
@@ -15,7 +15,14 @@ export default function ExperiencesPage() {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
-    const [form, setForm] = useState({ title: '', description: '', image_url: '' });
+    const [form, setForm] = useState({
+        title: '',
+        description: '',
+        category: 'Wellness',
+        image_url: '',
+        price_start_from: '',
+        cta_label: 'Inquire Now'
+    });
 
     useEffect(() => {
         fetchExperiences();
@@ -41,32 +48,55 @@ export default function ExperiencesPage() {
 
     function openNew() {
         setEditingId(null);
-        setForm({ title: '', description: '', image_url: '' });
+        setForm({
+            title: '',
+            description: '',
+            category: 'Wellness',
+            image_url: '',
+            price_start_from: '',
+            cta_label: 'Inquire Now'
+        });
         setShowModal(true);
     }
 
     function openEdit(exp: Experience) {
         setEditingId(exp.id);
-        setForm({ title: exp.title, description: exp.description, image_url: exp.image_url });
+        setForm({
+            title: exp.title,
+            description: exp.description,
+            category: exp.category,
+            image_url: exp.image_url,
+            price_start_from: exp.price_start_from ? String(exp.price_start_from) : '',
+            cta_label: exp.cta_label || 'Inquire Now'
+        });
         setShowModal(true);
     }
 
     async function handleSave() {
         setSaving(true);
         try {
+            const payload = {
+                title: form.title,
+                description: form.description,
+                category: form.category,
+                image_url: form.image_url,
+                price_start_from: form.price_start_from ? parseFloat(form.price_start_from) : null,
+                cta_label: form.cta_label
+            };
+
             if (editingId) {
                 // Update
                 const { error: updateError } = await supabase
                     .from('experiences')
-                    .update({ title: form.title, description: form.description, image_url: form.image_url })
+                    .update(payload)
                     .eq('id', editingId);
                 if (updateError) throw updateError;
-                setExperiences(prev => prev.map(e => e.id === editingId ? { ...e, ...form } : e));
+                setExperiences(prev => prev.map(e => e.id === editingId ? { ...e, ...payload } : e));
             } else {
                 // Create
                 const { data: newExp, error: insertError } = await supabase
                     .from('experiences')
-                    .insert([{ title: form.title, description: form.description, image_url: form.image_url }])
+                    .insert([payload])
                     .select()
                     .single();
                 if (insertError) throw insertError;
@@ -93,6 +123,11 @@ export default function ExperiencesPage() {
             setDeleting(null);
         }
     }
+
+    const formatPrice = (price?: number) => {
+        if (!price) return null;
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
+    };
 
     if (loading) {
         return (
@@ -141,12 +176,21 @@ export default function ExperiencesPage() {
                                 <div className="w-full h-full flex items-center justify-center text-admin-forest/30">No Image</div>
                             )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                            <div className="absolute top-3 left-3">
+                                <span className="px-2 py-1 bg-white/90 rounded text-xs font-bold">{exp.category}</span>
+                            </div>
                             <div className="absolute bottom-3 left-4 right-4">
                                 <h3 className="font-serif text-lg text-white truncate">{exp.title}</h3>
                             </div>
                         </div>
                         <div className="p-4">
-                            <p className="text-sm text-admin-forest/70 line-clamp-2 mb-4">{exp.description}</p>
+                            <p className="text-sm text-admin-forest/70 line-clamp-2 mb-3">{exp.description}</p>
+                            {exp.price_start_from && (
+                                <div className="flex items-center gap-1 text-sm font-bold text-admin-forest mb-3">
+                                    <DollarSign size={14} />
+                                    From {formatPrice(exp.price_start_from)}
+                                </div>
+                            )}
                             <div className="flex gap-2">
                                 <button onClick={() => openEdit(exp)} className="flex-1 btn-outline text-xs py-2">
                                     <Edit3 size={14} /> Edit
@@ -167,7 +211,7 @@ export default function ExperiencesPage() {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-                    <div className="glass-panel rounded-3xl p-8 w-full max-w-lg" onClick={e => e.stopPropagation()}>
+                    <div className="glass-panel rounded-3xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="font-serif text-2xl text-admin-forest">{editingId ? 'Edit' : 'Add'} Experience</h2>
                             <button onClick={() => setShowModal(false)} className="text-admin-forest/50 hover:text-admin-forest"><X size={20} /></button>
@@ -186,6 +230,21 @@ export default function ExperiencesPage() {
                                 />
                             </div>
                             <div>
+                                <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Category *</label>
+                                <select
+                                    value={form.category}
+                                    onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
+                                    className="input-field border-b"
+                                >
+                                    <option>Wellness</option>
+                                    <option>Adventure</option>
+                                    <option>Culture</option>
+                                    <option>Dining</option>
+                                    <option>Nature</option>
+                                    <option>Workshop</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Description *</label>
                                 <textarea
                                     value={form.description}
@@ -195,19 +254,40 @@ export default function ExperiencesPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Image URL</label>
+                                <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Image URL *</label>
                                 <input
                                     type="url"
                                     value={form.image_url}
                                     onChange={e => setForm(p => ({ ...p, image_url: e.target.value }))}
                                     className="input-field border-b"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Price From (IDR)</label>
+                                <input
+                                    type="number"
+                                    value={form.price_start_from}
+                                    onChange={e => setForm(p => ({ ...p, price_start_from: e.target.value }))}
+                                    className="input-field border-b"
+                                    placeholder="e.g. 500000"
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">CTA Label</label>
+                                <input
+                                    type="text"
+                                    value={form.cta_label}
+                                    onChange={e => setForm(p => ({ ...p, cta_label: e.target.value }))}
+                                    className="input-field border-b"
+                                    placeholder="e.g. Book Now"
                                 />
                             </div>
                         </div>
 
                         <div className="flex justify-end gap-4 mt-8">
                             <button onClick={() => setShowModal(false)} className="btn-outline">Cancel</button>
-                            <button onClick={handleSave} disabled={saving || !form.title} className="btn-primary">
+                            <button onClick={handleSave} disabled={saving || !form.title || !form.description || !form.image_url} className="btn-primary">
                                 {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                                 {editingId ? 'Save Changes' : 'Create'}
                             </button>

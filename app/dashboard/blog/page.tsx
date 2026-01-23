@@ -4,10 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Edit3, Trash2, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
-import { BlogPost } from '../../../lib/types';
+import { JournalPost } from '../../../lib/types';
 
-export default function BlogPage() {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function JournalPage() {
+    const [posts, setPosts] = useState<JournalPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deleting, setDeleting] = useState<string | null>(null);
@@ -21,20 +21,12 @@ export default function BlogPage() {
         setError(null);
         try {
             const { data, error: fetchError } = await supabase
-                .from('blog_posts')
+                .from('journal_posts')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (fetchError) {
-                // Table might not exist yet - show mock/empty state
-                if (fetchError.code === '42P01') {
-                    setError('Blog posts table does not exist. Please run migration.');
-                } else {
-                    throw fetchError;
-                }
-            } else {
-                setPosts(data || []);
-            }
+            if (fetchError) throw fetchError;
+            setPosts(data || []);
         } catch (err: any) {
             setError(err.message || 'Failed to load posts');
         } finally {
@@ -46,26 +38,13 @@ export default function BlogPage() {
         if (!confirm(`Delete "${title}"?`)) return;
         setDeleting(id);
         try {
-            const { error: deleteError } = await supabase.from('blog_posts').delete().eq('id', id);
+            const { error: deleteError } = await supabase.from('journal_posts').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setPosts(prev => prev.filter(p => p.id !== id));
         } catch (err: any) {
             alert(`Failed to delete: ${err.message}`);
         } finally {
             setDeleting(null);
-        }
-    }
-
-    async function togglePublish(id: string, currentStatus: boolean) {
-        try {
-            const { error: updateError } = await supabase
-                .from('blog_posts')
-                .update({ is_published: !currentStatus })
-                .eq('id', id);
-            if (updateError) throw updateError;
-            setPosts(prev => prev.map(p => p.id === id ? { ...p, is_published: !currentStatus } : p));
-        } catch (err: any) {
-            alert(`Failed to update: ${err.message}`);
         }
     }
 
@@ -80,12 +59,9 @@ export default function BlogPage() {
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center h-96 text-center">
-                <AlertCircle size={48} className="text-yellow-500 mb-4" />
-                <p className="text-yellow-700 mb-4">{error}</p>
-                <p className="text-sm text-admin-forest/60 mb-4">
-                    You need to create the `blog_posts` table in Supabase to use this feature.
-                </p>
-                <button onClick={fetchPosts} className="btn-outline">Retry</button>
+                <AlertCircle size={48} className="text-red-500 mb-4" />
+                <p className="text-red-600 mb-4">{error}</p>
+                <button onClick={fetchPosts} className="btn-primary">Retry</button>
             </div>
         );
     }
@@ -98,7 +74,7 @@ export default function BlogPage() {
                 <div>
                     <span className="font-mono text-xs uppercase tracking-widest text-admin-forest/50 block mb-2">Content</span>
                     <h1 className="font-serif text-3xl md:text-4xl text-admin-forest">
-                        Blog Posts ({posts.length})
+                        Journal Posts ({posts.length})
                     </h1>
                 </div>
 
@@ -117,7 +93,7 @@ export default function BlogPage() {
                                 <th className="py-4 pl-8">Title</th>
                                 <th className="py-4">Category</th>
                                 <th className="py-4">Author</th>
-                                <th className="py-4">Status</th>
+                                <th className="py-4">Published</th>
                                 <th className="py-4 text-center pr-8">Actions</th>
                             </tr>
                         </thead>
@@ -125,7 +101,7 @@ export default function BlogPage() {
                             {posts.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="py-12 text-center text-admin-forest/40">
-                                        No blog posts yet. Create your first post!
+                                        No journal posts yet. Create your first post!
                                     </td>
                                 </tr>
                             ) : (
@@ -141,18 +117,7 @@ export default function BlogPage() {
                                             <span className="px-2 py-1 bg-admin-sand rounded text-xs">{post.category}</span>
                                         </td>
                                         <td className="py-5 text-admin-forest/70">{post.author}</td>
-                                        <td className="py-5">
-                                            <button
-                                                onClick={() => togglePublish(post.id, !!post.is_published)}
-                                                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border flex items-center gap-1
-                          ${post.is_published
-                                                        ? 'bg-green-50 text-green-700 border-green-200'
-                                                        : 'bg-gray-50 text-gray-500 border-gray-200'}
-                        `}
-                                            >
-                                                {post.is_published ? <><Eye size={12} /> Published</> : <><EyeOff size={12} /> Draft</>}
-                                            </button>
-                                        </td>
+                                        <td className="py-5 text-admin-forest/60 font-mono text-xs">{post.published_at}</td>
                                         <td className="py-5 pr-8">
                                             <div className="flex items-center justify-center gap-2">
                                                 <Link

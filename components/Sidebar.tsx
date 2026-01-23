@@ -7,14 +7,14 @@ import {
     Home,
     Map,
     Calendar,
-    Users,
     PieChart,
     Settings,
     LogOut,
     Bell,
     X,
     Sparkles,
-    FileText
+    FileText,
+    MessageSquare
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -22,7 +22,8 @@ const NAV_ITEMS = [
     { label: 'Properties', icon: Map, href: '/dashboard/villas' },
     { label: 'Bookings', icon: Calendar, href: '/dashboard/bookings' },
     { label: 'Experiences', icon: Sparkles, href: '/dashboard/experiences' },
-    { label: 'Blog', icon: FileText, href: '/dashboard/blog' },
+    { label: 'Journal', icon: FileText, href: '/dashboard/blog' },
+    { label: 'Inquiries', icon: MessageSquare, href: '/dashboard/inquiries' },
     { label: 'Finance', icon: PieChart, href: '/dashboard/finance' },
 ];
 

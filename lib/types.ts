@@ -1,4 +1,4 @@
-// Villa Type (matches frontend)
+// Villa Type (matches database)
 export interface Villa {
     id: string;
     name: string;
@@ -8,7 +8,7 @@ export interface Villa {
     guests: number;
     image_url: string;
     images?: string[];
-    features: string[];
+    features?: string[];
     land_area: number;
     building_area: number;
     levels: number;
@@ -18,15 +18,7 @@ export interface Villa {
     latitude: number;
     longitude: number;
     amenities_detail?: Record<string, string[]>;
-    house_rules?: {
-        check_in: string;
-        check_out: string;
-        quiet_hours: string;
-        parties: boolean;
-        smoking: boolean;
-        pets: boolean;
-        max_guests: number;
-    };
+    house_rules?: Record<string, any>;
     proximity_list?: Array<{ name: string; distance: string }>;
     sleeping_arrangements?: Array<{ room: string; bed: string; view: string }>;
     created_at?: string;
@@ -36,7 +28,7 @@ export interface Villa {
 export interface Booking {
     id: string;
     villa_id: string;
-    villa?: Villa; // Joined
+    villas?: { name: string }; // Joined
     start_date: string;
     end_date: string;
     total_price: number;
@@ -48,41 +40,59 @@ export interface Booking {
     created_at?: string;
 }
 
-// Experience/Activity Type
+// Experience/Activity Type (matches database)
 export interface Experience {
     id: string;
     title: string;
     description: string;
+    category: string;
     image_url: string;
+    price_start_from?: number;
+    cta_label?: string;
     created_at?: string;
 }
 
-// Blog Post Type
-export interface BlogPost {
+// Journal Post Type (actual table name is journal_posts)
+export interface JournalPost {
     id: string;
     title: string;
     slug: string;
     excerpt: string;
-    content: string;
+    content?: string;
     category: string;
     image_url: string;
     author: string;
-    published_at?: string;
+    published_at: string;
     created_at?: string;
-    is_published?: boolean;
 }
 
-// Admin User Type
-export interface AdminUser {
+// Inquiry Type
+export interface Inquiry {
     id: string;
-    email: string;
-    role: 'admin' | 'super_admin';
+    name?: string;
+    email?: string;
+    message?: string;
+    type: string;
+    status: string;
+    created_at?: string;
+}
+
+// Review Type
+export interface Review {
+    id: string;
+    guest_name: string;
+    quote: string;
+    source?: string;
+    rating: number;
+    image_url?: string;
+    is_featured: boolean;
+    created_at?: string;
 }
 
 // Dashboard Stats
 export interface DashboardStats {
     totalRevenue: number;
     totalBookings: number;
-    occupancyRate: number;
-    activeGuests: number;
+    pendingBookings: number;
+    totalVillas: number;
 }
