@@ -52,40 +52,40 @@ export default function LoginPage() {
     };
 
     return (
-        <div ref={container} className="h-screen w-full flex overflow-hidden bg-admin-bg">
+        <div ref={container} className="min-h-screen w-full flex flex-col md:flex-row overflow-hidden bg-admin-bg">
 
             {/* LEFT: Brand Experience */}
-            <div className="login-split-left w-full md:w-[45%] bg-admin-forest relative flex flex-col justify-between p-12 text-admin-surface z-10">
+            <div className="login-split-left w-full h-[40vh] md:h-auto md:w-[45%] bg-admin-forest relative flex flex-col justify-between p-8 md:p-12 text-admin-surface z-10 shrink-0">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
                 <div className="relative z-10 brand-reveal">
-                    <span className="font-mono text-xs uppercase tracking-[0.3em] opacity-60">Internal System</span>
+                    <span className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] opacity-60">Internal System</span>
                 </div>
 
-                <div className="relative z-10">
-                    <h1 className="brand-reveal font-serif text-6xl md:text-8xl leading-none mb-6">
+                <div className="relative z-10 mt-8 md:mt-0">
+                    <h1 className="brand-reveal font-serif text-5xl md:text-8xl leading-none mb-4 md:mb-6">
                         Stayin<br />
                         <span className="italic text-admin-gold">UBUD</span>
                     </h1>
-                    <p className="brand-reveal font-sans text-sm opacity-60 max-w-md leading-relaxed tracking-wide">
+                    <p className="brand-reveal font-sans text-xs md:text-sm opacity-60 max-w-md leading-relaxed tracking-wide hidden md:block">
                         Access to the sanctuary mainframes. Authorized personnel only.
                     </p>
                 </div>
 
-                <div className="relative z-10 brand-reveal">
+                <div className="relative z-10 brand-reveal hidden md:block">
                     <span className="font-mono text-[10px] opacity-40">SYS.VER.2.0.4</span>
                 </div>
             </div>
 
             {/* RIGHT: Login Interface */}
-            <div className="login-split-right w-full md:w-[55%] bg-admin-bg flex flex-col justify-center items-center p-12 relative">
+            <div className="login-split-right w-full md:w-[55%] bg-admin-bg flex flex-col justify-center items-center p-8 md:p-12 relative flex-1">
                 <div className="w-full max-w-sm">
 
-                    <div className="mb-12 form-element">
-                        <div className="w-12 h-12 bg-admin-forest/5 rounded-full flex items-center justify-center mb-6">
-                            <Lock size={20} className="text-admin-forest" />
+                    <div className="mb-8 md:mb-12 form-element">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-admin-forest/5 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                            <Lock size={18} className="text-admin-forest" />
                         </div>
-                        <h2 className="font-serif text-3xl text-admin-forest mb-2">Authenticate</h2>
-                        <p className="text-admin-forest/50 text-sm">Enter your credentials to proceed.</p>
+                        <h2 className="font-serif text-2xl md:text-3xl text-admin-forest mb-2">Authenticate</h2>
+                        <p className="text-admin-forest/50 text-xs md:text-sm">Enter your credentials to proceed.</p>
                         {error && (
                             <div className="mt-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-200">
                                 {error}
@@ -93,40 +93,40 @@ export default function LoginPage() {
                         )}
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-8">
+                    <form onSubmit={handleLogin} className="space-y-6 md:space-y-8">
                         <div className="form-element group">
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2 group-focus-within:text-admin-forest transition-colors">
+                            <label className="block font-mono text-[10px] md:text-xs uppercase tracking-widest text-admin-forest/60 mb-2 group-focus-within:text-admin-forest transition-colors">
                                 ID / Email
                             </label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="input-field"
+                                className="input-field py-2 md:py-3 text-sm md:text-base"
                                 placeholder="admin@stayinubud.com"
                                 required
                             />
                         </div>
 
                         <div className="form-element group">
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2 group-focus-within:text-admin-forest transition-colors">
+                            <label className="block font-mono text-[10px] md:text-xs uppercase tracking-widest text-admin-forest/60 mb-2 group-focus-within:text-admin-forest transition-colors">
                                 Security Key
                             </label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="input-field"
+                                className="input-field py-2 md:py-3 text-sm md:text-base"
                                 placeholder="••••••••"
                                 required
                             />
                         </div>
 
-                        <div className="form-element pt-8">
+                        <div className="form-element pt-4 md:pt-8">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="btn-primary w-full justify-center group"
+                                className="btn-primary w-full justify-center group text-sm md:text-base py-3 md:py-4"
                             >
                                 {loading ? 'Verifying...' : 'Access Dashboard'}
                                 {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
@@ -134,8 +134,8 @@ export default function LoginPage() {
                         </div>
                     </form>
 
-                    <div className="form-element mt-12 text-center">
-                        <a href="#" className="font-mono text-xs text-admin-forest/40 hover:text-admin-forest transition-colors border-b border-transparent hover:border-admin-forest/20 pb-1">
+                    <div className="form-element mt-8 md:mt-12 text-center">
+                        <a href="#" className="font-mono text-[10px] md:text-xs text-admin-forest/40 hover:text-admin-forest transition-colors border-b border-transparent hover:border-admin-forest/20 pb-1">
                             Lost access credentials?
                         </a>
                     </div>
