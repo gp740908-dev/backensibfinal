@@ -6,58 +6,49 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ArrowRight, Lock } from 'lucide-react';
 
+import { createClient } from '../utils/supabase/client';
+
 export default function LoginPage() {
     const container = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    useGSAP(() => {
-        // Entrance Animation
-        const tl = gsap.timeline();
+    const supabase = createClient();
 
-        tl.from('.login-split-left', {
-            xPercent: -100,
-            duration: 1.5,
-            ease: 'power4.inOut'
-        })
-            .from('.login-split-right', {
-                xPercent: 100,
-                duration: 1.5,
-                ease: 'power4.inOut'
-            }, "<")
-            .from('.brand-reveal', {
-                y: 100,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out',
-                stagger: 0.1
-            }, "-=0.5")
-            .from('.form-element', {
-                y: 20,
-                opacity: 0,
-                duration: 0.8,
-                ease: 'power2.out',
-                stagger: 0.1
-            }, "-=0.5");
-
-    }, { scope: container });
+    // ... GSAP ...
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setError(null);
 
-        // Mock Authentication for Design Demo
-        setTimeout(() => {
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
             // Transition Out
             gsap.to('.login-split-left', { width: '100%', duration: 1, ease: 'power4.inOut' });
             gsap.to('.login-split-right', { xPercent: 100, opacity: 0, duration: 0.8, ease: 'power2.in' });
 
             setTimeout(() => {
+                router.refresh(); // Refresh to update middleware state
                 router.push('/dashboard');
             }, 800);
-        }, 1500);
+
+        } catch (err: any) {
+            setError(err.message || 'Login failed');
+            setLoading(false);
+
+            // Shake animation for error
+            gsap.fromTo('.form-element', { x: -10 }, { x: 10, duration: 0.1, repeat: 5, yoyo: true });
+        }
     };
 
     return (
@@ -95,6 +86,11 @@ export default function LoginPage() {
                         </div>
                         <h2 className="font-serif text-3xl text-admin-forest mb-2">Authenticate</h2>
                         <p className="text-admin-forest/50 text-sm">Enter your credentials to proceed.</p>
+                        {error && (
+                            <div className="mt-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-200">
+                                {error}
+                            </div>
+                        )}
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-8">
