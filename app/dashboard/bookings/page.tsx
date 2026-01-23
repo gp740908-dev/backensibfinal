@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ChevronLeft, ChevronRight, Calendar as CalendarIcon, MoreHorizontal, CheckCircle, XCircle, Loader2, AlertCircle, Eye } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Calendar as CalendarIcon, MoreHorizontal, CheckCircle, XCircle, Loader2, AlertCircle, Eye, Phone, Mail } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Booking, Villa } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
@@ -24,7 +24,6 @@ export default function BookingsPage() {
         setLoading(true);
         setError(null);
         try {
-            // Fetch bookings with villa name join
             const { data, error: fetchError } = await supabase
                 .from('bookings')
                 .select(`
@@ -83,6 +82,12 @@ export default function BookingsPage() {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
     };
 
+    const formatWhatsAppLink = (phone: string, guestName: string, villaName: string, dates: string) => {
+        const cleanPhone = phone.replace(/\D/g, '');
+        const message = `Halo ${guestName}, terima kasih telah melakukan booking di StayinUBUD untuk ${villaName} (${dates}). `;
+        return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
@@ -101,6 +106,8 @@ export default function BookingsPage() {
         );
     }
 
+    const pendingCount = bookings.filter(b => b.status === 'pending').length;
+
     return (
         <div className="space-y-8">
 
@@ -108,9 +115,14 @@ export default function BookingsPage() {
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <span className="font-mono text-xs uppercase tracking-widest text-admin-forest/50 block mb-2">Operations</span>
-                    <h1 className="font-serif text-3xl md:text-4xl text-admin-forest">
-                        Reservations ({bookings.length})
-                    </h1>
+                    <div className="flex items-center gap-4">
+                        <h1 className="font-serif text-3xl md:text-4xl text-admin-forest">
+                            Reservations ({bookings.length})
+                        </h1>
+                        {pendingCount > 0 && (
+                            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">{pendingCount} pending</span>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex gap-2">
@@ -140,7 +152,7 @@ export default function BookingsPage() {
             {/* Table Panel */}
             <div className="glass-panel rounded-3xl overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left min-w-[900px]">
+                    <table className="w-full text-left min-w-[1000px]">
                         <thead className="bg-admin-forest/5 text-xs font-mono uppercase tracking-widest text-admin-forest/50">
                             <tr>
                                 <th className="py-4 pl-8">Guest</th>
@@ -168,7 +180,29 @@ export default function BookingsPage() {
                                                 </div>
                                                 <div>
                                                     <p className="font-serif font-medium">{booking.guest_name}</p>
-                                                    <p className="text-xs text-admin-forest/50 font-mono">{booking.guest_email}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        {booking.guest_email && (
+                                                            <a href={`mailto:${booking.guest_email}`} className="text-admin-forest/50 hover:text-admin-gold" title={booking.guest_email}>
+                                                                <Mail size={12} />
+                                                            </a>
+                                                        )}
+                                                        {booking.guest_whatsapp && (
+                                                            <a
+                                                                href={formatWhatsAppLink(
+                                                                    booking.guest_whatsapp,
+                                                                    booking.guest_name,
+                                                                    booking.villa_name || '',
+                                                                    `${formatDate(booking.start_date)} - ${formatDate(booking.end_date)}`
+                                                                )}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-green-600 hover:text-green-700"
+                                                                title={booking.guest_whatsapp}
+                                                            >
+                                                                <Phone size={12} />
+                                                            </a>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -194,6 +228,24 @@ export default function BookingsPage() {
                                         </td>
                                         <td className="py-5 pr-8">
                                             <div className="flex items-center justify-center gap-2">
+                                                {/* WhatsApp Reply Button */}
+                                                {booking.guest_whatsapp && (
+                                                    <a
+                                                        href={formatWhatsAppLink(
+                                                            booking.guest_whatsapp,
+                                                            booking.guest_name,
+                                                            booking.villa_name || '',
+                                                            `${formatDate(booking.start_date)} - ${formatDate(booking.end_date)}`
+                                                        )}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                                        title="Reply via WhatsApp"
+                                                    >
+                                                        <Phone size={14} />
+                                                    </a>
+                                                )}
+
                                                 {booking.status === 'pending' && (
                                                     <>
                                                         <button
