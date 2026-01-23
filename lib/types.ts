@@ -96,3 +96,9 @@ export interface DashboardStats {
     pendingBookings: number;
     totalVillas: number;
 }
+
+export interface Subscriber {
+    id: string;
+    email: string;
+    subscribed_at: string;
+}

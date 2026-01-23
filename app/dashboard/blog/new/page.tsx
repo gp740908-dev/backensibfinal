@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
+import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
 
 export default function NewJournalPostPage() {
     const router = useRouter();
@@ -43,7 +44,7 @@ export default function NewJournalPostPage() {
         setError(null);
 
         try {
-            const { error: insertError } = await supabase.from('journal_posts').insert([{
+            const { data, error: insertError } = await supabase.from('journal_posts').insert([{
                 title: form.title,
                 slug: form.slug,
                 excerpt: form.excerpt,
@@ -52,14 +53,16 @@ export default function NewJournalPostPage() {
                 author: form.author,
                 image_url: form.image_url,
                 published_at: form.published_at
-            }]);
+            }]).select();
 
-            if (insertError) throw insertError;
+            validateResult(data, insertError, 'creating post');
+
             success('Post Created', `"${form.title}" published successfully`);
             router.push('/dashboard/blog');
         } catch (err: any) {
-            setError(err.message || 'Failed to create post');
-            toastError('Creation Failed', err.message);
+            const msg = handleSupabaseError(err, 'creating post');
+            setError(msg);
+            toastError('Creation Failed', msg);
         } finally {
             setSaving(false);
         }

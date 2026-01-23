@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { Villa } from '../../../../lib/types';
 import { useToast } from '../../../../components/Toast';
+import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
 
 export default function EditVillaPage() {
     const router = useRouter();
@@ -50,28 +51,27 @@ export default function EditVillaPage() {
                 .eq('id', villaId)
                 .single();
 
-            if (fetchError) throw fetchError;
-            if (!data) throw new Error('Villa not found');
+            const villa = validateResult(data, fetchError, 'loading villa');
 
             setForm({
-                name: data.name || '',
-                description: data.description || '',
-                price_per_night: String(data.price_per_night || ''),
-                bedrooms: String(data.bedrooms || ''),
-                guests: String(data.guests || ''),
-                bathrooms: String(data.bathrooms || ''),
-                image_url: data.image_url || '',
-                land_area: String(data.land_area || ''),
-                building_area: String(data.building_area || ''),
-                levels: String(data.levels || ''),
-                pantry: String(data.pantry || ''),
-                pool_area: String(data.pool_area || ''),
-                latitude: String(data.latitude || ''),
-                longitude: String(data.longitude || ''),
-                features: (data.features || []).join(', ')
+                name: villa.name || '',
+                description: villa.description || '',
+                price_per_night: String(villa.price_per_night || ''),
+                bedrooms: String(villa.bedrooms || ''),
+                guests: String(villa.guests || ''),
+                bathrooms: String(villa.bathrooms || ''),
+                image_url: villa.image_url || '',
+                land_area: String(villa.land_area || ''),
+                building_area: String(villa.building_area || ''),
+                levels: String(villa.levels || ''),
+                pantry: String(villa.pantry || ''),
+                pool_area: String(villa.pool_area || ''),
+                latitude: String(villa.latitude || ''),
+                longitude: String(villa.longitude || ''),
+                features: (villa.features || []).join(', ')
             });
         } catch (err: any) {
-            setError(err.message || 'Failed to load villa');
+            setError(handleSupabaseError(err, 'loading villa'));
         } finally {
             setLoading(false);
         }
@@ -111,16 +111,14 @@ export default function EditVillaPage() {
                 .eq('id', villaId)
                 .select();
 
-            if (updateError) throw updateError;
-            if (!data || data.length === 0) {
-                throw new Error('Update failed: No changes were saved. Check your permissions.');
-            }
+            validateResult(data, updateError, 'updating villa');
 
             success('Villa Updated', `"${form.name}" has been saved successfully`);
             router.push('/dashboard/villas');
         } catch (err: any) {
-            setError(err.message || 'Failed to update villa');
-            toastError('Update Failed', err.message);
+            const msg = handleSupabaseError(err, 'updating villa');
+            setError(msg);
+            toastError('Update Failed', msg);
         } finally {
             setSaving(false);
         }
@@ -135,8 +133,9 @@ export default function EditVillaPage() {
             success('Villa Deleted', `"${form.name}" has been removed`);
             router.push('/dashboard/villas');
         } catch (err: any) {
-            setError(err.message || 'Failed to delete villa');
-            toastError('Delete Failed', err.message);
+            const msg = handleSupabaseError(err, 'deleting villa');
+            setError(msg);
+            toastError('Delete Failed', msg);
             setDeleting(false);
         }
     };

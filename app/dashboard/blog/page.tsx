@@ -6,6 +6,7 @@ import { Plus, Edit3, Trash2, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-r
 import { supabase } from '../../../lib/supabase';
 import { JournalPost } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
+import { handleSupabaseError } from '../../../lib/errorHandler';
 
 export default function JournalPage() {
     const { success, error: toastError } = useToast();
@@ -30,7 +31,7 @@ export default function JournalPage() {
             if (fetchError) throw fetchError;
             setPosts(data || []);
         } catch (err: any) {
-            setError(err.message || 'Failed to load posts');
+            setError(handleSupabaseError(err, 'loading posts'));
         } finally {
             setLoading(false);
         }
@@ -45,7 +46,7 @@ export default function JournalPage() {
             setPosts(prev => prev.filter(p => p.id !== id));
             success('Post Deleted', `"${title}" removed successfully`);
         } catch (err: any) {
-            toastError('Delete Failed', err.message);
+            toastError('Delete Failed', handleSupabaseError(err, 'deleting post'));
         } finally {
             setDeleting(null);
         }

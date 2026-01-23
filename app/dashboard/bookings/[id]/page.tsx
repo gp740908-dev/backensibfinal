@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, User, Mail, Phone, MessageSquare, Home, DollarSign
 import { supabase } from '../../../../lib/supabase';
 import { Booking } from '../../../../lib/types';
 import { useToast } from '../../../../components/Toast';
+import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
 
 export default function BookingDetailPage() {
     const router = useRouter();
@@ -36,6 +37,8 @@ export default function BookingDetailPage() {
                 .single();
 
             if (fetchError) throw fetchError;
+
+            // Check if data exists using validateResult (though simple throw above catches error, null check below)
             if (!data) throw new Error('Booking not found');
 
             setBooking({
@@ -43,7 +46,7 @@ export default function BookingDetailPage() {
                 villa_name: data.villas?.name || 'Unknown Villa'
             });
         } catch (err: any) {
-            setError(err.message || 'Failed to load booking');
+            setError(handleSupabaseError(err, 'loading booking'));
         } finally {
             setLoading(false);
         }
@@ -59,14 +62,12 @@ export default function BookingDetailPage() {
                 .eq('id', bookingId)
                 .select();
 
-            if (updateError) throw updateError;
-            if (!data || data.length === 0) {
-                throw new Error('Update failed: No changes were saved. Check your permissions.');
-            }
+            validateResult(data, updateError, 'updating booking');
+
             setBooking(prev => prev ? { ...prev, status: newStatus } : null);
             success('Booking Updated', `Status changed to ${newStatus}`);
         } catch (err: any) {
-            toastError('Update Failed', err.message);
+            toastError('Update Failed', handleSupabaseError(err, 'updating booking'));
         } finally {
             setUpdating(false);
         }

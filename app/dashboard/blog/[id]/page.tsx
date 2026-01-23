@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
+import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
 
 export default function EditJournalPostPage() {
     const router = useRouter();
@@ -42,21 +43,20 @@ export default function EditJournalPostPage() {
                 .eq('id', postId)
                 .single();
 
-            if (fetchError) throw fetchError;
-            if (!data) throw new Error('Post not found');
+            const post = validateResult(data, fetchError, 'loading post');
 
             setForm({
-                title: data.title || '',
-                slug: data.slug || '',
-                excerpt: data.excerpt || '',
-                content: data.content || '',
-                category: data.category || 'Travel',
-                author: data.author || '',
-                image_url: data.image_url || '',
-                published_at: data.published_at || ''
+                title: post.title || '',
+                slug: post.slug || '',
+                excerpt: post.excerpt || '',
+                content: post.content || '',
+                category: post.category || 'Travel',
+                author: post.author || '',
+                image_url: post.image_url || '',
+                published_at: post.published_at || ''
             });
         } catch (err: any) {
-            setError(err.message || 'Failed to load post');
+            setError(handleSupabaseError(err, 'loading post'));
         } finally {
             setLoading(false);
         }
@@ -95,16 +95,14 @@ export default function EditJournalPostPage() {
                 .eq('id', postId)
                 .select();
 
-            if (updateError) throw updateError;
-            if (!data || data.length === 0) {
-                throw new Error('Update failed: No changes were saved. Check your permissions.');
-            }
+            validateResult(data, updateError, 'updating post');
 
             success('Post Updated', `"${form.title}" saved successfully`);
             router.push('/dashboard/blog');
         } catch (err: any) {
-            setError(err.message || 'Failed to update post');
-            toastError('Update Failed', err.message);
+            const msg = handleSupabaseError(err, 'updating post');
+            setError(msg);
+            toastError('Update Failed', msg);
         } finally {
             setSaving(false);
         }
@@ -119,8 +117,9 @@ export default function EditJournalPostPage() {
             success('Post Deleted', `"${form.title}" has been removed`);
             router.push('/dashboard/blog');
         } catch (err: any) {
-            setError(err.message || 'Failed to delete post');
-            toastError('Delete Failed', err.message);
+            const msg = handleSupabaseError(err, 'deleting post');
+            setError(msg);
+            toastError('Delete Failed', msg);
             setDeleting(false);
         }
     };

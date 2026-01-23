@@ -6,6 +6,7 @@ import { Plus, Edit3, Trash2, MapPin, Bed, Maximize, Star, Loader2, AlertCircle 
 import { supabase } from '../../../lib/supabase';
 import { Villa } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
+import { handleSupabaseError } from '../../../lib/errorHandler';
 
 export default function VillasPage() {
     const { success, error: toastError } = useToast();
@@ -30,7 +31,7 @@ export default function VillasPage() {
             if (fetchError) throw fetchError;
             setVillas(data || []);
         } catch (err: any) {
-            setError(err.message || 'Failed to load villas');
+            setError(handleSupabaseError(err, 'fetching villas'));
         } finally {
             setLoading(false);
         }
@@ -46,7 +47,7 @@ export default function VillasPage() {
             setVillas(prev => prev.filter(v => v.id !== id));
             success('Villa Deleted', `"${name}" has been removed successfully`);
         } catch (err: any) {
-            toastError('Delete Failed', err.message);
+            toastError('Delete Failed', handleSupabaseError(err, 'deleting villa'));
         } finally {
             setDeleting(null);
         }

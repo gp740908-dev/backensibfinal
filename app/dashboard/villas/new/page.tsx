@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
+import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
 
 export default function NewVillaPage() {
     const router = useRouter();
@@ -59,15 +60,19 @@ export default function NewVillaPage() {
                 features: form.features.split(',').map(f => f.trim()).filter(Boolean)
             };
 
-            const { error: insertError } = await supabase.from('villas').insert([payload]);
+            const { data, error: insertError } = await supabase
+                .from('villas')
+                .insert([payload])
+                .select();
 
-            if (insertError) throw insertError;
+            validateResult(data, insertError, 'creating villa');
 
             success('Villa Created', `"${form.name}" has been added successfully`);
             router.push('/dashboard/villas');
         } catch (err: any) {
-            setError(err.message || 'Failed to create villa');
-            toastError('Creation Failed', err.message);
+            const msg = handleSupabaseError(err, 'creating villa');
+            setError(msg);
+            toastError('Creation Failed', msg);
         } finally {
             setSaving(false);
         }

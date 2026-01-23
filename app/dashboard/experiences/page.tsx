@@ -5,6 +5,7 @@ import { Plus, Edit3, Trash2, Loader2, AlertCircle, Save, X, DollarSign } from '
 import { supabase } from '../../../lib/supabase';
 import { Experience } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
+import { handleSupabaseError } from '../../../lib/errorHandler';
 
 export default function ExperiencesPage() {
     const { success, error: toastError } = useToast();
@@ -42,7 +43,7 @@ export default function ExperiencesPage() {
             if (fetchError) throw fetchError;
             setExperiences(data || []);
         } catch (err: any) {
-            setError(err.message || 'Failed to load experiences');
+            setError(handleSupabaseError(err, 'loading experiences'));
         } finally {
             setLoading(false);
         }
@@ -111,7 +112,7 @@ export default function ExperiencesPage() {
             setShowModal(false);
             success(editingId ? 'Experience Updated' : 'Experience Created', `"${form.title}" saved successfully`);
         } catch (err: any) {
-            toastError('Save Failed', err.message);
+            toastError('Save Failed', handleSupabaseError(err, 'saving experience'));
         } finally {
             setSaving(false);
         }
@@ -126,7 +127,7 @@ export default function ExperiencesPage() {
             setExperiences(prev => prev.filter(e => e.id !== id));
             success('Experience Deleted', `"${title}" removed successfully`);
         } catch (err: any) {
-            toastError('Delete Failed', err.message);
+            toastError('Delete Failed', handleSupabaseError(err, 'deleting experience'));
         } finally {
             setDeleting(null);
         }
