@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import { useToast } from '../../../components/Toast';
 import { handleSupabaseError } from '../../../lib/errorHandler';
 import { useRouter } from 'next/navigation';
+import { PushNotificationManager } from '../../../components/PushNotificationManager';
 
 export default function SettingsPage() {
     const { success, error: toastError } = useToast();
@@ -137,6 +138,9 @@ export default function SettingsPage() {
                     <LogOut size={14} /> Sign Out
                 </button>
             </header>
+
+            {/* Push Notifications */}
+            <PushNotificationManager />
 
             {/* Profile Section */}
             <form onSubmit={handleSaveProfile} className="glass-panel rounded-3xl p-8">
