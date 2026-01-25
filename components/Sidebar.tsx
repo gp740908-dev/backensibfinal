@@ -22,6 +22,7 @@ import { supabase } from '../lib/supabase';
 
 const NAV_ITEMS = [
     { label: 'Overview', icon: Home, href: '/dashboard' },
+    { label: 'Notifications', icon: Bell, href: '/dashboard/notifications' },
     { label: 'Properties', icon: Map, href: '/dashboard/villas' },
     { label: 'Bookings', icon: Calendar, href: '/dashboard/bookings' },
     { label: 'Experiences', icon: Sparkles, href: '/dashboard/experiences' },
