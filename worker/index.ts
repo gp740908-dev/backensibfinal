@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 'use client';
 
 // Helper to listen for push events
