@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -18,6 +18,7 @@ import {
     Star,
     Users
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const NAV_ITEMS = [
     { label: 'Overview', icon: Home, href: '/dashboard' },
@@ -39,6 +40,19 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) => {
     const pathname = usePathname();
+    const [profile, setProfile] = useState<{ name: string; initials: string }>({ name: 'Admin', initials: 'A' });
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin';
+                const initials = name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase();
+                setProfile({ name, initials });
+            }
+        };
+        fetchUser();
+    }, []);
 
     return (
         <aside
@@ -137,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                 <div className="flex items-center gap-3 px-2 pt-2 cursor-pointer group/profile">
                     <div className="relative">
                         <div className="w-8 h-8 rounded-full bg-admin-sand flex items-center justify-center text-admin-forest font-bold text-xs ring-2 ring-transparent group-hover/profile:ring-admin-gold transition-all">
-                            JD
+                            {profile.initials}
                         </div>
                         <div className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-admin-forest" />
                     </div>
@@ -149,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                             }
                       `}
                     >
-                        <p className="text-xs font-bold text-white">John Doe</p>
+                        <p className="text-xs font-bold text-white">{profile.name}</p>
                         <p className="text-[10px] text-white/50">Admin</p>
                     </div>
                 </div>
