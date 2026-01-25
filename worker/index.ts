@@ -7,7 +7,7 @@
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 sw.addEventListener('push', function (event) {
-    if (!(sw.Notification && sw.Notification.permission === 'granted')) {
+    if (!((sw as any).Notification && (sw as any).Notification.permission === 'granted')) {
         return;
     }
 
