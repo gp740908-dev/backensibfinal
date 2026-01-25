@@ -8,6 +8,7 @@ import { supabase } from '../../../../lib/supabase';
 import { Villa } from '../../../../lib/types';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { ImageUpload } from '../../../../components/ImageUpload';
 
 export default function EditVillaPage() {
     const router = useRouter();
@@ -202,9 +203,12 @@ export default function EditVillaPage() {
                         <input type="number" name="price_per_night" value={form.price_per_night} onChange={handleChange} className="input-field border-b" required />
                     </div>
 
-                    <div>
-                        <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Image URL</label>
-                        <input type="url" name="image_url" value={form.image_url} onChange={handleChange} className="input-field border-b" />
+                    <div className="md:col-span-2">
+                        <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Villa Image</label>
+                        <ImageUpload
+                            value={form.image_url}
+                            onChange={(url) => setForm(prev => ({ ...prev, image_url: url }))}
+                        />
                     </div>
                 </div>
 

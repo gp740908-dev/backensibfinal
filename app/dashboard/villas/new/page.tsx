@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { ImageUpload } from '../../../../components/ImageUpload';
 
 export default function NewVillaPage() {
     const router = useRouter();
@@ -135,15 +136,11 @@ export default function NewVillaPage() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Image URL</label>
-                        <input
-                            type="url"
-                            name="image_url"
+                    <div className="md:col-span-2">
+                        <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Villa Image</label>
+                        <ImageUpload
                             value={form.image_url}
-                            onChange={handleChange}
-                            className="input-field border-b"
-                            placeholder="https://..."
+                            onChange={(url) => setForm(prev => ({ ...prev, image_url: url }))}
                         />
                     </div>
                 </div>
