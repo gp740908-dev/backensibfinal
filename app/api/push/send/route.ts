@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
                 endpoint: sub.endpoint,
                 keys: sub.keys
             }, notificationPayload)
-                .catch(err => {
+                .catch((err: any) => {
                     // If 410 Gone, delete subscription
                     if (err.statusCode === 410) {
                         supabase.from('admin_push_subscriptions').delete().eq('endpoint', sub.endpoint);
