@@ -1,13 +1,12 @@
-
 'use client';
 
 // Helper to listen for push events
 // Note: This file is compiled by next-pwa and appended to sw.js
 
-declare let self: ServiceWorkerGlobalScope;
+const sw = self as unknown as ServiceWorkerGlobalScope;
 
-self.addEventListener('push', function (event) {
-    if (!(self.Notification && self.Notification.permission === 'granted')) {
+sw.addEventListener('push', function (event) {
+    if (!(sw.Notification && sw.Notification.permission === 'granted')) {
         return;
     }
 
@@ -30,16 +29,16 @@ self.addEventListener('push', function (event) {
         ]
     };
 
-    event.waitUntil(self.registration.showNotification(title, options));
+    event.waitUntil(sw.registration.showNotification(title, options));
 });
 
-self.addEventListener('notificationclick', function (event) {
+sw.addEventListener('notificationclick', function (event) {
     event.notification.close();
 
     const urlToOpen = event.notification.data.url;
 
     event.waitUntil(
-        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+        sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
             // Check if there is already a window/tab open with the target URL
             for (let i = 0; i < windowClients.length; i++) {
                 const client = windowClients[i];
@@ -48,8 +47,8 @@ self.addEventListener('notificationclick', function (event) {
                 }
             }
             // If not, open a new window
-            if (self.clients.openWindow) {
-                return self.clients.openWindow(urlToOpen);
+            if (sw.clients.openWindow) {
+                return sw.clients.openWindow(urlToOpen);
             }
         })
     );
