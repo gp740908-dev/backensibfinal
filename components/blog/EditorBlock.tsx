@@ -4,7 +4,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, X, Image as ImageIcon, Type, Quote, Heading } from 'lucide-react';
 import { Block, BlockType } from './BlockTypes';
-import { ImageUpload } from '../../ImageUpload';
+import { ImageUpload } from '../ImageUpload';
 
 interface EditorBlockProps {
     block: Block;

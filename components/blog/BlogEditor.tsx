@@ -21,7 +21,7 @@ import { Plus, Save, Loader2, Image as ImageIcon, Type, Quote, Heading } from 'l
 import { Block, BlockType } from './BlockTypes';
 import { EditorBlock } from './EditorBlock';
 import { SEOAnalyzer } from './SEOAnalyzer';
-import { ImageUpload } from '../../ImageUpload';
+import { ImageUpload } from '../ImageUpload';
 
 // Helper for UUID if uuid package not available
 const generateId = () => Math.random().toString(36).substr(2, 9);
