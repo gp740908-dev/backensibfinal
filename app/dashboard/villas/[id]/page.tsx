@@ -9,6 +9,7 @@ import { Villa } from '../../../../lib/types';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
 import { ImageUpload } from '../../../../components/ImageUpload';
+import { MapPicker } from '../../../../components/MapPicker';
 
 export default function EditVillaPage() {
     const router = useRouter();
@@ -257,16 +258,11 @@ export default function EditVillaPage() {
                 {/* Location */}
                 <div>
                     <h3 className="font-serif text-xl mb-4 text-admin-forest">Location</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Latitude</label>
-                            <input type="text" name="latitude" value={form.latitude} onChange={handleChange} className="input-field border-b" />
-                        </div>
-                        <div>
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Longitude</label>
-                            <input type="text" name="longitude" value={form.longitude} onChange={handleChange} className="input-field border-b" />
-                        </div>
-                    </div>
+                    <MapPicker
+                        latitude={form.latitude}
+                        longitude={form.longitude}
+                        onLocationChange={(lat, lng) => setForm(prev => ({ ...prev, latitude: lat, longitude: lng }))}
+                    />
                 </div>
 
                 {/* Features */}

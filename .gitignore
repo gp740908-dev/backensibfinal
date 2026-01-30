@@ -28,3 +28,4 @@ ts-debug.log*
 
 # vercel
 .vercel
+./.agent
