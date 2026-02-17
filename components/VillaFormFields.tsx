@@ -178,7 +178,7 @@ export const AmenitiesEditor: React.FC<AmenitiesEditorProps> = ({ value, onChang
         setNewCategory('');
     };
 
-    const categories = [...new Set([...DEFAULT_AMENITY_CATEGORIES, ...Object.keys(value)])];
+    const categories = Array.from(new Set([...DEFAULT_AMENITY_CATEGORIES, ...Object.keys(value)]));
 
     return (
         <div className="space-y-6">
