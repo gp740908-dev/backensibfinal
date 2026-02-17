@@ -9,6 +9,10 @@ import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
 import { ImageUpload } from '../../../../components/ImageUpload';
 import { MapPicker } from '../../../../components/MapPicker';
+import {
+    HouseRulesEditor, AmenitiesEditor, ProximityEditor, SleepingEditor, FeaturesTagInput,
+    HouseRules, AmenitiesDetail, ProximityItem, SleepingItem, DEFAULT_HOUSE_RULES
+} from '../../../../components/VillaFormFields';
 
 export default function NewVillaPage() {
     const router = useRouter();
@@ -32,12 +36,13 @@ export default function NewVillaPage() {
         pool_area: '',
         latitude: '',
         longitude: '',
-        features: '',
-        house_rules: '',
-        amenities_detail: '',
-        proximity_list: '',
-        sleeping_arrangements: ''
     });
+
+    const [features, setFeatures] = useState<string[]>([]);
+    const [houseRules, setHouseRules] = useState<HouseRules>({ ...DEFAULT_HOUSE_RULES });
+    const [amenities, setAmenities] = useState<AmenitiesDetail>({});
+    const [proximity, setProximity] = useState<ProximityItem[]>([]);
+    const [sleeping, setSleeping] = useState<SleepingItem[]>([]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -64,12 +69,12 @@ export default function NewVillaPage() {
                 pool_area: parseFloat(form.pool_area) || 0,
                 latitude: parseFloat(form.latitude) || -8.5,
                 longitude: parseFloat(form.longitude) || 115.2,
-                features: form.features.split(',').map(f => f.trim()).filter(Boolean),
+                features: features,
                 images: form.images.filter(Boolean),
-                house_rules: form.house_rules ? JSON.parse(form.house_rules) : null,
-                amenities_detail: form.amenities_detail ? JSON.parse(form.amenities_detail) : null,
-                proximity_list: form.proximity_list ? JSON.parse(form.proximity_list) : null,
-                sleeping_arrangements: form.sleeping_arrangements ? JSON.parse(form.sleeping_arrangements) : null
+                house_rules: houseRules,
+                amenities_detail: Object.keys(amenities).length > 0 ? amenities : null,
+                proximity_list: proximity.filter(p => p.name.trim()).length > 0 ? proximity.filter(p => p.name.trim()) : null,
+                sleeping_arrangements: sleeping.filter(s => s.room.trim()).length > 0 ? sleeping.filter(s => s.room.trim()) : null
             };
 
             const { data, error: insertError } = await supabase
@@ -234,65 +239,19 @@ export default function NewVillaPage() {
                 </div>
 
                 {/* Features */}
-                <div>
-                    <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Features (comma-separated)</label>
-                    <input
-                        type="text"
-                        name="features"
-                        value={form.features}
-                        onChange={handleChange}
-                        className="input-field border-b"
-                        placeholder="Private Pool, Rice Field View, Kitchen, WiFi"
-                    />
-                </div>
+                <FeaturesTagInput value={features} onChange={setFeatures} />
 
-                {/* Rich Content */}
-                <div>
-                    <h3 className="font-serif text-xl mb-4 text-admin-forest">Detailed Information (JSON)</h3>
-                    <p className="text-xs text-admin-forest/50 mb-4">These fields accept JSON format. Leave empty if not applicable.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">House Rules</label>
-                            <textarea
-                                name="house_rules"
-                                value={form.house_rules}
-                                onChange={handleChange}
-                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
-                                placeholder='{"check_in": "14:00", "check_out": "11:00", "pets": false, "smoking": false}'
-                            />
-                        </div>
-                        <div>
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Amenities Detail</label>
-                            <textarea
-                                name="amenities_detail"
-                                value={form.amenities_detail}
-                                onChange={handleChange}
-                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
-                                placeholder='{"wifi": true, "ac": true, "kitchen": true, "parking": true}'
-                            />
-                        </div>
-                        <div>
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Proximity List</label>
-                            <textarea
-                                name="proximity_list"
-                                value={form.proximity_list}
-                                onChange={handleChange}
-                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
-                                placeholder='[{"name": "Ubud Market", "distance": "2 km"}, {"name": "Tegallalang", "distance": "5 km"}]'
-                            />
-                        </div>
-                        <div>
-                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Sleeping Arrangements</label>
-                            <textarea
-                                name="sleeping_arrangements"
-                                value={form.sleeping_arrangements}
-                                onChange={handleChange}
-                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
-                                placeholder='[{"room": "Master", "bed": "King"}, {"room": "Guest", "bed": "Twin"}]'
-                            />
-                        </div>
-                    </div>
-                </div>
+                {/* House Rules */}
+                <HouseRulesEditor value={houseRules} onChange={setHouseRules} />
+
+                {/* Amenities */}
+                <AmenitiesEditor value={amenities} onChange={setAmenities} />
+
+                {/* Proximity */}
+                <ProximityEditor value={proximity} onChange={setProximity} />
+
+                {/* Sleeping Arrangements */}
+                <SleepingEditor value={sleeping} onChange={setSleeping} />
 
                 {/* Submit */}
                 <div className="flex justify-end gap-4 pt-6 border-t border-admin-forest/10">
