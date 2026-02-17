@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Plus, X } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
@@ -24,6 +24,7 @@ export default function NewVillaPage() {
         guests: '',
         bathrooms: '',
         image_url: '',
+        images: [] as string[],
         land_area: '',
         building_area: '',
         levels: '1',
@@ -31,7 +32,11 @@ export default function NewVillaPage() {
         pool_area: '',
         latitude: '',
         longitude: '',
-        features: ''
+        features: '',
+        house_rules: '',
+        amenities_detail: '',
+        proximity_list: '',
+        sleeping_arrangements: ''
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -59,7 +64,12 @@ export default function NewVillaPage() {
                 pool_area: parseFloat(form.pool_area) || 0,
                 latitude: parseFloat(form.latitude) || -8.5,
                 longitude: parseFloat(form.longitude) || 115.2,
-                features: form.features.split(',').map(f => f.trim()).filter(Boolean)
+                features: form.features.split(',').map(f => f.trim()).filter(Boolean),
+                images: form.images.filter(Boolean),
+                house_rules: form.house_rules ? JSON.parse(form.house_rules) : null,
+                amenities_detail: form.amenities_detail ? JSON.parse(form.amenities_detail) : null,
+                proximity_list: form.proximity_list ? JSON.parse(form.proximity_list) : null,
+                sleeping_arrangements: form.sleeping_arrangements ? JSON.parse(form.sleeping_arrangements) : null
             };
 
             const { data, error: insertError } = await supabase
@@ -138,11 +148,36 @@ export default function NewVillaPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Villa Image</label>
+                        <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Main Image</label>
                         <ImageUpload
                             value={form.image_url}
                             onChange={(url) => setForm(prev => ({ ...prev, image_url: url }))}
                         />
+                    </div>
+
+                    {/* Gallery Images */}
+                    <div className="md:col-span-2">
+                        <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Gallery Images</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {form.images.map((img, idx) => (
+                                <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-admin-forest/10 group">
+                                    <img src={img} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))}
+                                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                            <div>
+                                <ImageUpload
+                                    value=""
+                                    onChange={(url) => { if (url) setForm(prev => ({ ...prev, images: [...prev.images, url] })); }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -209,6 +244,54 @@ export default function NewVillaPage() {
                         className="input-field border-b"
                         placeholder="Private Pool, Rice Field View, Kitchen, WiFi"
                     />
+                </div>
+
+                {/* Rich Content */}
+                <div>
+                    <h3 className="font-serif text-xl mb-4 text-admin-forest">Detailed Information (JSON)</h3>
+                    <p className="text-xs text-admin-forest/50 mb-4">These fields accept JSON format. Leave empty if not applicable.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">House Rules</label>
+                            <textarea
+                                name="house_rules"
+                                value={form.house_rules}
+                                onChange={handleChange}
+                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
+                                placeholder='{"check_in": "14:00", "check_out": "11:00", "pets": false, "smoking": false}'
+                            />
+                        </div>
+                        <div>
+                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Amenities Detail</label>
+                            <textarea
+                                name="amenities_detail"
+                                value={form.amenities_detail}
+                                onChange={handleChange}
+                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
+                                placeholder='{"wifi": true, "ac": true, "kitchen": true, "parking": true}'
+                            />
+                        </div>
+                        <div>
+                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Proximity List</label>
+                            <textarea
+                                name="proximity_list"
+                                value={form.proximity_list}
+                                onChange={handleChange}
+                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
+                                placeholder='[{"name": "Ubud Market", "distance": "2 km"}, {"name": "Tegallalang", "distance": "5 km"}]'
+                            />
+                        </div>
+                        <div>
+                            <label className="block font-mono text-xs uppercase tracking-widest text-admin-forest/60 mb-2">Sleeping Arrangements</label>
+                            <textarea
+                                name="sleeping_arrangements"
+                                value={form.sleeping_arrangements}
+                                onChange={handleChange}
+                                className="input-field border rounded-xl min-h-[100px] p-4 font-mono text-xs"
+                                placeholder='[{"room": "Master", "bed": "King"}, {"room": "Guest", "bed": "Twin"}]'
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Submit */}

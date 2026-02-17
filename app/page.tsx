@@ -135,9 +135,19 @@ export default function LoginPage() {
                     </form>
 
                     <div className="form-element mt-8 md:mt-12 text-center">
-                        <a href="#" className="font-mono text-[10px] md:text-xs text-admin-forest/40 hover:text-admin-forest transition-colors border-b border-transparent hover:border-admin-forest/20 pb-1">
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                const email = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value;
+                                if (!email) { alert('Please enter your email first.'); return; }
+                                const { error } = await supabase.auth.resetPasswordForEmail(email);
+                                if (error) alert('Error: ' + error.message);
+                                else alert('Password reset email sent! Check your inbox.');
+                            }}
+                            className="font-mono text-[10px] md:text-xs text-admin-forest/40 hover:text-admin-forest transition-colors border-b border-transparent hover:border-admin-forest/20 pb-1 bg-transparent cursor-pointer"
+                        >
                             Lost access credentials?
-                        </a>
+                        </button>
                     </div>
 
                 </div>

@@ -2,14 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Calendar, MessageSquare, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function NotificationsPage() {
     const [activities, setActivities] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const supabase = createClient();
 
     useEffect(() => {
         const fetchActivity = async () => {
@@ -31,9 +30,9 @@ export default function NotificationsPage() {
 
                 // Combine and sort
                 const combined = [
-                    ...(bookings?.map(b => ({ ...b, source: 'booking' })) || []),
-                    ...(inquiries?.map(i => ({ ...i, source: 'inquiry' })) || [])
-                ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                    ...(bookings?.map((b: any) => ({ ...b, source: 'booking' })) || []),
+                    ...(inquiries?.map((i: any) => ({ ...i, source: 'inquiry' })) || [])
+                ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
                 setActivities(combined);
             } catch (error) {

@@ -24,15 +24,15 @@ export async function POST(request: NextRequest) {
             url: url || '/dashboard'
         });
 
-        const promises = subscriptions.map(sub => {
+        const promises = subscriptions.map((sub: { endpoint: string; keys: { p256dh: string; auth: string } }) => {
             return webpush.sendNotification({
                 endpoint: sub.endpoint,
                 keys: sub.keys
             }, notificationPayload)
-                .catch((err: any) => {
+                .catch(async (err: any) => {
                     // If 410 Gone, delete subscription
                     if (err.statusCode === 410) {
-                        supabase.from('admin_push_subscriptions').delete().eq('endpoint', sub.endpoint);
+                        await supabase.from('admin_push_subscriptions').delete().eq('endpoint', sub.endpoint);
                     }
                     console.error('Send error:', err);
                 });

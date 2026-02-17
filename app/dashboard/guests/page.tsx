@@ -156,12 +156,6 @@ export default function GuestsPage() {
                 {guests.map(guest => (
                     <div key={guest.id} className="glass-panel p-8 rounded-3xl group hover:border-admin-forest/20 transition-all duration-300 relative">
 
-                        <div className="absolute top-6 right-6">
-                            <button className="text-admin-forest/30 hover:text-admin-forest transition-colors">
-                                <MoreHorizontal size={20} />
-                            </button>
-                        </div>
-
                         <div className="flex flex-col items-center text-center mb-8">
                             <div className="w-24 h-24 rounded-full bg-admin-sand mb-4 overflow-hidden relative">
                                 <div className="absolute inset-0 flex items-center justify-center text-3xl font-serif text-admin-forest/40">

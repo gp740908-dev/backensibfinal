@@ -33,8 +33,9 @@ export default function FinancePage() {
 
             const allBookings = bookings || [];
 
-            // Calculate totals
-            const totalRevenue = allBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+            // Calculate totals (exclude cancelled bookings from total revenue)
+            const validBookings = allBookings.filter(b => b.status !== 'cancelled');
+            const totalRevenue = validBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
             const confirmedRevenue = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').reduce((sum, b) => sum + (b.total_price || 0), 0);
             const pendingRevenue = allBookings.filter(b => b.status === 'pending').reduce((sum, b) => sum + (b.total_price || 0), 0);
 
@@ -61,6 +62,28 @@ export default function FinancePage() {
         } finally {
             setLoading(false);
         }
+    }
+
+    function handleExportCSV() {
+        if (!data) return;
+        const rows = [
+            ['Month', 'Revenue (IDR)'],
+            ...data.monthlyData.map(m => [m.month, m.revenue.toString()]),
+            [],
+            ['Summary', ''],
+            ['Total Revenue', data.totalRevenue.toString()],
+            ['Confirmed Revenue', data.confirmedRevenue.toString()],
+            ['Pending Revenue', data.pendingRevenue.toString()],
+            ['Total Bookings', data.totalBookings.toString()],
+        ];
+        const csv = rows.map(r => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `revenue-report-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     const formatPrice = (price: number) => {
@@ -100,7 +123,7 @@ export default function FinancePage() {
                         Revenue & Assets
                     </h1>
                 </div>
-                <button className="btn-outline">
+                <button className="btn-outline" onClick={handleExportCSV}>
                     <Download size={16} /> Export Report
                 </button>
             </header>
@@ -191,7 +214,10 @@ export default function FinancePage() {
                         </div>
                     </div>
 
-                    <button className="w-full mt-8 py-3 bg-admin-forest/5 rounded-xl text-xs font-bold text-admin-forest hover:bg-admin-forest/10 transition-colors">
+                    <button
+                        className="w-full mt-8 py-3 bg-admin-forest/5 rounded-xl text-xs font-bold text-admin-forest hover:bg-admin-forest/10 transition-colors"
+                        onClick={() => window.open('/dashboard/bookings', '_self')}
+                    >
                         View Detailed Ledger
                     </button>
                 </div>

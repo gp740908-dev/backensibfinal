@@ -111,7 +111,7 @@ export default function SettingsPage() {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        router.push('/login');
+        router.push('/');
     };
 
     if (loading) {
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                     <AlertTriangle size={20} /> Danger Zone
                 </h2>
                 <p className="text-sm text-admin-forest/70 mb-4">
-                    Deleting your account requires administrative priviledges. Please contact super admin support to process this request permanently.
+                    Deleting your account requires administrative privileges. Please contact super admin support to process this request permanently.
                 </p>
                 <button type="button" disabled className="btn-outline text-red-400 border-red-200 cursor-not-allowed opacity-60">
                     Delete Account

@@ -15,6 +15,7 @@ export default function BookingsPage() {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('All');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchBookings();
@@ -66,9 +67,21 @@ export default function BookingsPage() {
         }
     }
 
-    const filteredBookings = activeTab === 'All'
+    const tabFiltered = activeTab === 'All'
         ? bookings
         : bookings.filter(b => b.status.toLowerCase() === activeTab.toLowerCase());
+
+    const filteredBookings = searchQuery.trim()
+        ? tabFiltered.filter(b => {
+            const q = searchQuery.toLowerCase();
+            return (
+                b.guest_name?.toLowerCase().includes(q) ||
+                b.guest_email?.toLowerCase().includes(q) ||
+                b.villa_name?.toLowerCase().includes(q) ||
+                b.guest_whatsapp?.toLowerCase().includes(q)
+            );
+        })
+        : tabFiltered;
 
     const formatDate = (dateStr: string) => {
         try {
@@ -160,7 +173,13 @@ Best regards,
                 <div className="flex gap-2">
                     <div className="relative">
                         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-admin-forest/40" />
-                        <input type="text" placeholder="Search guest..." className="pl-10 pr-4 py-3 rounded-xl bg-white border border-admin-forest/10 focus:outline-none focus:border-admin-forest/30 font-mono text-xs w-64" />
+                        <input
+                            type="text"
+                            placeholder="Search guest..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 pr-4 py-3 rounded-xl bg-white border border-admin-forest/10 focus:outline-none focus:border-admin-forest/30 font-mono text-xs w-64"
+                        />
                     </div>
                 </div>
             </header>
