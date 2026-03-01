@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { revalidateJournal } from '../../../../lib/revalidate';
 import { BlogEditor } from '../../../../components/blog/BlogEditor';
 
 export default function EditJournalPostPage() {
@@ -69,6 +70,7 @@ export default function EditJournalPostPage() {
 
             validateResult(data, updateError, 'updating post');
 
+            revalidateJournal(postData.slug);
             success('Post Updated', `"${postData.title}" saved successfully`);
             router.push('/dashboard/blog');
         } catch (err: any) {
@@ -86,6 +88,7 @@ export default function EditJournalPostPage() {
         try {
             const { error: deleteError } = await supabase.from('journal_posts').delete().eq('id', postId);
             if (deleteError) throw deleteError;
+            revalidateJournal(post?.slug);
             success('Post Deleted', `"${post?.title}" has been removed`);
             router.push('/dashboard/blog');
         } catch (err: any) {

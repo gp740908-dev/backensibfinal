@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2, Trash2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { revalidateReview } from '../../../../lib/revalidate';
 
 export default function EditReviewPage() {
     const router = useRouter();
@@ -80,6 +81,7 @@ export default function EditReviewPage() {
 
             validateResult(data, updateError, 'updating review');
 
+            revalidateReview();
             success('Review Updated', `Review by "${form.guest_name}" saved successfully`);
             router.push('/dashboard/reviews');
         } catch (err: any) {
@@ -98,6 +100,7 @@ export default function EditReviewPage() {
             const { error: deleteError } = await supabase.from('reviews').delete().eq('id', reviewId);
             if (deleteError) throw deleteError; // delete doesn't always return data unless select() used, assuming void
 
+            revalidateReview();
             success('Review Deleted', `Review has been removed`);
             router.push('/dashboard/reviews');
         } catch (err: any) {

@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { revalidateJournal } from '../../../../lib/revalidate';
 import { BlogEditor } from '../../../../components/blog/BlogEditor';
 
 export default function NewJournalPostPage() {
@@ -33,6 +34,7 @@ export default function NewJournalPostPage() {
 
             validateResult(data, insertError, 'creating post');
 
+            revalidateJournal(postData.slug);
             success('Post Created', `"${postData.title}" published successfully`);
             router.push('/dashboard/blog');
         } catch (err: any) {

@@ -7,6 +7,7 @@ import { supabase } from '../../../lib/supabase';
 import { Review } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
 import { handleSupabaseError } from '../../../lib/errorHandler';
+import { revalidateReview } from '../../../lib/revalidate';
 
 export default function ReviewsPage() {
     const { success, error: toastError } = useToast();
@@ -44,6 +45,7 @@ export default function ReviewsPage() {
             const { error: deleteError } = await supabase.from('reviews').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setReviews(prev => prev.filter(r => r.id !== id));
+            revalidateReview();
             success('Review Deleted', `Review by "${guestName}" has been removed`);
         } catch (err: any) {
             toastError('Delete Failed', handleSupabaseError(err, 'deleting review'));

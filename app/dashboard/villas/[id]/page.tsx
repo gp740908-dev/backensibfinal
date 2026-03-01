@@ -8,6 +8,7 @@ import { supabase } from '../../../../lib/supabase';
 import { Villa } from '../../../../lib/types';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { revalidateVilla } from '../../../../lib/revalidate';
 import { ImageUpload } from '../../../../components/ImageUpload';
 import { MapPicker } from '../../../../components/MapPicker';
 import {
@@ -135,6 +136,9 @@ export default function EditVillaPage() {
 
             validateResult(data, updateError, 'updating villa');
 
+            // Revalidate frontend cache so changes appear immediately
+            revalidateVilla(villaId);
+
             success('Villa Updated', `"${form.name}" has been saved successfully`);
             router.push('/dashboard/villas');
         } catch (err: any) {
@@ -152,6 +156,10 @@ export default function EditVillaPage() {
         try {
             const { error: deleteError } = await supabase.from('villas').delete().eq('id', villaId);
             if (deleteError) throw deleteError;
+
+            // Revalidate frontend cache
+            revalidateVilla(villaId);
+
             success('Villa Deleted', `"${form.name}" has been removed`);
             router.push('/dashboard/villas');
         } catch (err: any) {

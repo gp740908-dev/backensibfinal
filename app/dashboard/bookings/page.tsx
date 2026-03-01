@@ -7,6 +7,7 @@ import { supabase } from '../../../lib/supabase';
 import { Booking, Villa } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
 import { handleSupabaseError } from '../../../lib/errorHandler';
+import { revalidateBooking } from '../../../lib/revalidate';
 
 export default function BookingsPage() {
     const { success, error: toastError } = useToast();
@@ -59,6 +60,8 @@ export default function BookingsPage() {
             if (updateError) throw updateError;
 
             setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+            const villaId = bookings.find(b => b.id === id)?.villa_id;
+            revalidateBooking(villaId);
             success(`Booking ${newStatus === 'confirmed' ? 'Confirmed' : 'Cancelled'}`, 'Status updated successfully');
         } catch (err: any) {
             toastError('Update Failed', handleSupabaseError(err, 'updating booking status'));

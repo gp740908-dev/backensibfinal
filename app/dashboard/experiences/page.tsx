@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import { Experience } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
 import { handleSupabaseError } from '../../../lib/errorHandler';
+import { revalidateExperience } from '../../../lib/revalidate';
 
 export default function ExperiencesPage() {
     const { success, error: toastError } = useToast();
@@ -110,6 +111,7 @@ export default function ExperiencesPage() {
                 setExperiences(prev => [newExp, ...prev]);
             }
             setShowModal(false);
+            revalidateExperience();
             success(editingId ? 'Experience Updated' : 'Experience Created', `"${form.title}" saved successfully`);
         } catch (err: any) {
             toastError('Save Failed', handleSupabaseError(err, 'saving experience'));
@@ -125,6 +127,7 @@ export default function ExperiencesPage() {
             const { error: deleteError } = await supabase.from('experiences').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setExperiences(prev => prev.filter(e => e.id !== id));
+            revalidateExperience();
             success('Experience Deleted', `"${title}" removed successfully`);
         } catch (err: any) {
             toastError('Delete Failed', handleSupabaseError(err, 'deleting experience'));

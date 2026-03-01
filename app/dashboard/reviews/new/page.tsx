@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { revalidateReview } from '../../../../lib/revalidate';
 
 export default function NewReviewPage() {
     const router = useRouter();
@@ -45,6 +46,7 @@ export default function NewReviewPage() {
 
             validateResult(data, insertError, 'creating review');
 
+            revalidateReview();
             success('Review Created', `Review by "${form.guest_name}" added successfully`);
             router.push('/dashboard/reviews');
         } catch (err: any) {

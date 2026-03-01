@@ -7,6 +7,7 @@ import { supabase } from '../../../lib/supabase';
 import { JournalPost } from '../../../lib/types';
 import { useToast } from '../../../components/Toast';
 import { handleSupabaseError } from '../../../lib/errorHandler';
+import { revalidateJournal } from '../../../lib/revalidate';
 
 export default function JournalPage() {
     const { success, error: toastError } = useToast();
@@ -44,6 +45,7 @@ export default function JournalPage() {
             const { error: deleteError } = await supabase.from('journal_posts').delete().eq('id', id);
             if (deleteError) throw deleteError;
             setPosts(prev => prev.filter(p => p.id !== id));
+            revalidateJournal();
             success('Post Deleted', `"${title}" removed successfully`);
         } catch (err: any) {
             toastError('Delete Failed', handleSupabaseError(err, 'deleting post'));

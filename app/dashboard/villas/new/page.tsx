@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2, Plus, X } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/Toast';
 import { handleSupabaseError, validateResult } from '../../../../lib/errorHandler';
+import { revalidateVilla } from '../../../../lib/revalidate';
 import { ImageUpload } from '../../../../components/ImageUpload';
 import { MapPicker } from '../../../../components/MapPicker';
 import {
@@ -83,6 +84,10 @@ export default function NewVillaPage() {
                 .select();
 
             validateResult(data, insertError, 'creating villa');
+
+            // Revalidate frontend cache so new villa appears immediately
+            const newId = Array.isArray(data) && data[0]?.id ? data[0].id : undefined;
+            revalidateVilla(newId);
 
             success('Villa Created', `"${form.name}" has been added successfully`);
             router.push('/dashboard/villas');
